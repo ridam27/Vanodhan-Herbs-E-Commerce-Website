@@ -1,11 +1,13 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import FeaturedProducts from "@/components/FeaturedProducts";
 
 export default function Home() {
   return (
-    <div>
+    <main>
       <Navbar />
       <Hero />
-    </div>
+      <FeaturedProducts />
+    </main>
   );
 }
