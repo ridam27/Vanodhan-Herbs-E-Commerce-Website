@@ -3,24 +3,39 @@ import { products } from "@/data/products";
 
 export default function FeaturedProducts() {
     return (
-        <section className="bg-white py-24">
-            <div className="mx-auto max-w-7xl px-6">
-                <div className="mb-12 flex items-end justify-between">
+        <section className="bg-[var(--bg)] py-16 transition-colors duration-300 sm:py-20 lg:py-24">
+            <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+
+                <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                     <div>
-                        <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-green-700">
+                        <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-[var(--primary)]">
                             Our Products
                         </p>
-                        <h2 className="text-4xl font-bold text-gray-900">
+
+                        <h2 className="text-3xl font-bold text-[var(--text)] sm:text-4xl">
                             Featured Ayurvedic Products
                         </h2>
                     </div>
 
-                    <button className="hidden rounded-full border border-green-700 px-6 py-3 font-medium text-green-700 transition hover:bg-green-700 hover:text-white md:block">
+                    <button
+                        className="
+              hidden md:block
+              rounded-full
+              border
+              border-[var(--primary)]
+              px-6 py-3
+              font-medium
+              text-[var(--primary)]
+              transition-all duration-300
+              hover:bg-[var(--primary)]
+              hover:text-white
+            "
+                    >
                         View All Products
                     </button>
                 </div>
 
-                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {products.map((product) => (
                         <ProductCard
                             key={product.id}
@@ -30,6 +45,7 @@ export default function FeaturedProducts() {
                         />
                     ))}
                 </div>
+
             </div>
         </section>
     );
