@@ -5,7 +5,7 @@ export default function ProductCard({
     name,
     price,
     rating = 4.8,
-    reviews = 42,
+    reviews = 12,
     tag = "Wellness Support",
     badge,
 }) {
@@ -18,82 +18,50 @@ export default function ProductCard({
                 boxShadow: "0 8px 25px var(--shadow)",
             }}
         >
-            {/* Image */}
-            <div className="relative overflow-hidden">
+            <div className="relative aspect-square overflow-hidden">
                 {badge && (
-                    <div className="absolute left-4 top-4 z-10 rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                    <div className="absolute left-3 top-3 z-10 rounded-full bg-[var(--primary)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white sm:left-4 sm:top-4 sm:px-3 sm:text-xs">
                         {badge}
                     </div>
                 )}
 
+                <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-gray-800 shadow-md backdrop-blur-sm md:hidden">
+                    <FiStar className="fill-yellow-400 text-yellow-400" size={13} />
+                    <span>{rating}</span>
+                </div>
+
                 <img
                     src={image}
                     alt={name}
-                    className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-72"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
             </div>
 
-            {/* Content */}
-            <div className="p-5">
-                <p
-                    className="mb-2 text-xs font-semibold uppercase tracking-wider"
-                    style={{ color: "var(--primary)" }}
-                >
-                    {tag}
-                </p>
+            <div className="p-4 sm:p-5">
+                <div className="mb-2 hidden items-center justify-between gap-3 md:flex">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--primary)]">
+                        {tag}
+                    </p>
 
-                <h3
-                    className="mb-3 text-lg font-bold sm:text-xl"
-                    style={{ color: "var(--text)" }}
-                >
+                    <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
+                        <FiStar className="fill-yellow-400 text-yellow-400" size={15} />
+                        <span>
+                            {rating} ({reviews})
+                        </span>
+                    </div>
+                </div>
+
+                <h3 className="mb-3 line-clamp-2 text-sm font-bold text-[var(--text)] sm:text-lg lg:text-xl">
                     {name}
                 </h3>
 
-                <div
-                    className="mb-4 flex items-center gap-2 text-sm"
-                    style={{ color: "var(--text-secondary)" }}
-                >
-                    <FiStar
-                        className="fill-yellow-400 text-yellow-400"
-                        size={16}
-                    />
-                    <span>
-                        {rating} ({reviews})
-                    </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                    <p
-                        className="text-xl font-bold sm:text-2xl"
-                        style={{
-                            color: "var(--primary)",
-                        }}
-                    >
+                <div className="flex items-center justify-between gap-3">
+                    <p className="text-lg font-bold text-[var(--primary)] sm:text-2xl">
                         ₹{price}
                     </p>
 
-                    <button
-                        className="
-              group/btn
-              flex items-center gap-2
-              rounded-full
-              px-4 py-2
-              text-sm font-medium
-              text-white
-              transition-all duration-300
-              hover:shadow-lg
-              bg-[var(--primary)]
-              hover:bg-[var(--primary-hover)]
-            "
-                    >
-                        Details
-                        <FiArrowRight
-                            className="
-            transition-transform
-            duration-300    
-            group-hover/btn:translate-x-1.5
-            "
-                        />
+                    <button className="group/btn flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white transition-all duration-300 hover:bg-[var(--primary-hover)] hover:shadow-lg sm:h-10 sm:w-10">
+                        <FiArrowRight className="transition-transform duration-300 group-hover/btn:translate-x-1" />
                     </button>
                 </div>
             </div>

@@ -40,6 +40,6 @@ export const products = [
         rating: 4.6,
         reviews: 7,
         tag: "Respiratory Care",
-        badge: "Customer Favorite",
+        badge: "Customer Fav",
     },
 ];

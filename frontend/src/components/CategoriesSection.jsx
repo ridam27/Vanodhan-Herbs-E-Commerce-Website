@@ -25,19 +25,36 @@ export default function CategoriesSection() {
                         return (
                             <div
                                 key={category.title}
-                                className="group rounded-3xl border border-[var(--border)] bg-[var(--bg)] p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-[var(--surface-2)] hover:shadow-[0_12px_35px_var(--shadow)]"
+                                className="
+    group flex items-center gap-4
+    rounded-2xl
+    border border-[var(--border)]
+    bg-[var(--surface)]
+    p-4
+    transition-all duration-300
+    hover:-translate-y-1
+    hover:bg-[var(--surface-2)]
+    hover:shadow-[0_12px_35px_var(--shadow)]
+
+    sm:block
+    sm:rounded-3xl
+    sm:bg-[var(--bg)]
+    sm:p-6
+  "
                             >
-                                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--primary)] text-white shadow-lg transition-all duration-300 group-hover:scale-105">
-                                    <Icon size={30} />
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)] text-white shadow-lg transition-all duration-300 group-hover:scale-105 sm:mb-6 sm:h-16 sm:w-16 sm:rounded-2xl">
+                                    <Icon size={24} className="sm:h-[30px] sm:w-[30px]" />
                                 </div>
 
-                                <h3 className="mb-3 text-xl font-bold text-[var(--text)]">
-                                    {category.title}
-                                </h3>
+                                <div>
+                                    <h3 className="text-base font-bold text-[var(--text)] sm:mb-3 sm:text-xl">
+                                        {category.title}
+                                    </h3>
 
-                                <p className="text-sm leading-7 text-[var(--text-secondary)]">
-                                    {category.description}
-                                </p>
+                                    <p className="hidden text-sm leading-7 text-[var(--text-secondary)] sm:block">
+                                        {category.description}
+                                    </p>
+                                </div>
                             </div>
                         );
                     })}

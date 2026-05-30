@@ -45,7 +45,7 @@ export default function Navbar() {
                 >
                     <div className="flex items-center">
                         <img
-                            src="/logo.png"
+                            src={isDark ? "/logo-dark.png" : "/logo-light.png"}
                             alt="Vanodhan Herbs"
                             className="h-12 w-auto object-contain md:h-14"
                         />

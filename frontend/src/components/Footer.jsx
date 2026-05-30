@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 
 export default function Footer() {
+
     const quickLinks = ["Home", "Shop", "About", "Contact"];
 
     const shopLinks = [
@@ -37,7 +38,7 @@ export default function Footer() {
                     {/* Brand */}
                     <div>
                         <img
-                            src="/logo.png"
+                            src="/logo-light.png"
                             alt="Vanodhan Herbs"
                             className="mb-6 h-16 w-auto"
                         />
@@ -75,7 +76,7 @@ export default function Footer() {
                     <ContactItem
                         icon={FiPhone}
                         text="+91 99752 26220"
-                        href="+919975226220"
+                        href="tel:+919975226220"
                     />
 
                     <ContactItem
@@ -87,7 +88,7 @@ export default function Footer() {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-[var(--border)] pt-6 text-sm text-[var(--text-secondary)] md:flex-row">
+                <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-[var(--border)] pt-6 text-sm text-[var(--text-secondary)] md:flex-row">
                     <p>
                         © 2026 Vanodhan Herbs. All rights reserved.
                     </p>
@@ -95,6 +96,15 @@ export default function Footer() {
                     <p>
                         Rooted in Nature, Committed to Wellness.
                     </p>
+
+                    <a
+                        href="https://instagram.com/ridam_27"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="transition-colors duration-300 hover:text-pink-500"
+                    >
+                        Made with ❤️ by Ridam Satkar
+                    </a>
                 </div>
             </div>
         </footer>
@@ -165,7 +175,7 @@ function ContactItem({ icon: Icon, text, href }) {
         hover:-translate-y-1
       "
             style={{
-                backgroundColor: "var(--surface)",
+                backgroundColor: "var(--foot-btn-bg)",
                 border: "1px solid var(--border)",
                 boxShadow: "0 4px 15px var(--shadow)",
             }}
