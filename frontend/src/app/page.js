@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import BestSellers from "@/components/BestSellers";
 import CategoriesSection from "@/components/CategoriesSection";
 import WhyChooseUs from "@/components/WhyChooseUs";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
       <BestSellers />
       <CategoriesSection />
       <WhyChooseUs />
+      <Footer />
     </main>
   );
 }

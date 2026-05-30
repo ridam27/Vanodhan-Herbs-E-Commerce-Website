@@ -1,31 +1,8 @@
-import { GiPowder, GiMedicines, GiOilDrum, GiHerbsBundle } from "react-icons/gi";
-
-const categories = [
-    {
-        title: "Herbal Powders",
-        description: "Natural powders for daily wellness and health support.",
-        icon: GiPowder,
-    },
-    {
-        title: "Churna",
-        description: "Traditional Ayurvedic blends for digestion and balance.",
-        icon: GiMedicines,
-    },
-    {
-        title: "Herbal Oils",
-        description: "Ayurvedic oils for hair, skin, and body care.",
-        icon: GiOilDrum,
-    },
-    {
-        title: "Wellness Products",
-        description: "Daily-use products crafted with natural ingredients.",
-        icon: GiHerbsBundle,
-    },
-];
+import { categories } from "@/data/categories";
 
 export default function CategoriesSection() {
     return (
-        <section className="bg-[var(--surface)] py-16 transition-colors duration-300 sm:py-20 lg:py-24">
+        <section className="bg-[var(--bg    )] py-16 transition-colors duration-300 sm:py-20 lg:py-24">
             <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
                 <div className="mb-12 text-center">
                     <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-[var(--primary)]">

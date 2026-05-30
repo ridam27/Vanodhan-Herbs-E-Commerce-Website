@@ -42,6 +42,10 @@ export default function BestSellers() {
                             image={product.image}
                             name={product.name}
                             price={product.price}
+                            rating={product.rating}
+                            reviews={product.reviews}
+                            tag={product.tag}
+                            badge={product.badge}
                         />
                     ))}
                 </div>
