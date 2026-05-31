@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
     FiMenu,
@@ -16,7 +17,12 @@ export default function Navbar() {
     const [isDark, setIsDark] = useState(false);
 
     const isLoggedIn = false;
-    const navLinks = ["Home", "Shop", "About", "Contact"];
+    const navLinks = [
+        { name: "Home", href: "/" },
+        { name: "Shop", href: "/shop" },
+        { name: "About", href: "/about" },
+        { name: "Contact", href: "/contact" },
+    ];
 
     const toggleTheme = () => {
         setIsDark((prev) => {
@@ -54,7 +60,7 @@ export default function Navbar() {
                     <div className="hidden items-center gap-8 lg:flex">
                         {navLinks.map((item) => (
                             <button
-                                key={item}
+                                key={item.name}
                                 className="relative text-sm font-medium transition-all duration-300 after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-0 after:rounded-full after:transition-all after:duration-300 hover:after:w-full"
                                 style={{
                                     color: "var(--text)",
@@ -74,7 +80,9 @@ export default function Navbar() {
                                     className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full transition-all duration-300 group-hover:w-full"
                                     style={{ backgroundColor: "var(--primary)" }}
                                 />
-                                {item}
+                                <Link href={item.href}>
+                                    {item.name}
+                                </Link>
                             </button>
                         ))}
                     </div>
@@ -180,7 +188,7 @@ export default function Navbar() {
             >
                 <div className="mb-10 flex items-center justify-between">
                     <img
-                        src="/logo.png"
+                        src={isDark ? "/logo-dark.png" : "/logo-light.png"}
                         alt="Vanodhan Herbs"
                         className="h-12 w-auto object-contain"
                     />
@@ -200,7 +208,7 @@ export default function Navbar() {
                 <div className="flex flex-col gap-4">
                     {navLinks.map((item) => (
                         <button
-                            key={item}
+                            key={item.name}
                             onClick={() => setIsMenuOpen(false)}
                             className="rounded-2xl px-5 py-4 text-left text-lg font-semibold transition-all duration-300"
                             style={{
@@ -215,7 +223,9 @@ export default function Navbar() {
                                 e.currentTarget.style.color = "var(--text)";
                             }}
                         >
-                            {item}
+                            <Link href={item.href}>
+                                {item.name}
+                            </Link>
                         </button>
                     ))}
                 </div>

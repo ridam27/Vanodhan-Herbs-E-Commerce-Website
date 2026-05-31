@@ -180,7 +180,7 @@ function ContactItem({ icon: Icon, text, href }) {
                 boxShadow: "0 4px 15px var(--shadow)",
             }}
         >
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--primary)] text-white">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white">
                 <Icon size={18} />
             </div>
 
