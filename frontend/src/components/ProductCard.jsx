@@ -70,7 +70,7 @@ export default function ProductCard({
 
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <div className="flex items-end gap-2">
+                            <div className="flex items-end gap-1">
                                 <p
                                     className="text-xl font-bold sm:text-2xl"
                                     style={{
@@ -82,7 +82,7 @@ export default function ProductCard({
 
                                 {discount > 0 && (
                                     <p
-                                        className="pb-0.5 text-xs line-through sm:text-sm"
+                                        className="pb-1 text-xs line-through sm:text-sm"
                                         style={{
                                             color: "var(--text-secondary)",
                                         }}
@@ -93,7 +93,7 @@ export default function ProductCard({
                             </div>
 
                             {discount > 0 && (
-                                <p className="mt-1 text-xs font-semibold text-green-600">
+                                <p className="text-xs font-semibold text-green-600">
                                     {discount}% OFF
                                 </p>
                             )}

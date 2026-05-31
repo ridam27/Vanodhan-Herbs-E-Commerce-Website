@@ -43,7 +43,7 @@ export const products = [
         name: "Shatavari Kalp",
         price: 349,
         discount:10,
-        stock: false,
+        stock: true,
         delivery: "3-5 business days",
         image: "/products/shatavari.jpg",
         images: [
