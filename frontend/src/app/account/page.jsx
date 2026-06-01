@@ -4,9 +4,11 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/providers/AuthProvider";
 import { FiLogOut, FiMapPin, FiPackage, FiShoppingBag } from "react-icons/fi";
+import { useAddress } from "@/providers/AddressProvider";
 
 export default function AccountPage() {
     const { user, logout, authLoading } = useAuth();
+    const { addresses, addressLoading } = useAddress();
 
     console.log(user);
 
@@ -137,15 +139,57 @@ export default function AccountPage() {
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl border border-dashed border-[var(--border)] p-5">
+                                {addressLoading ? (
                                     <p className="text-sm text-[var(--text-secondary)]">
-                                        No saved addresses yet.
+                                        Loading addresses...
                                     </p>
+                                ) : addresses.length === 0 ? (
+                                    <div className="rounded-2xl border border-dashed border-[var(--border)] p-5">
+                                        
 
-                                    <button className="mt-4 rounded-full bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)]">
-                                        Add Address
-                                    </button>
-                                </div>
+                                            <p className="text-sm leading-6 text-[var(--text-secondary)]">
+                                                    No saved addresses yet. You can add a delivery address during checkout.
+                                                </p>
+                                            
+                                    </div>
+                                ) : (
+                                    <div className="grid gap-4">
+                                        {addresses.map((address) => (
+                                            <div
+                                                key={address.id}
+                                                className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4"
+                                            >
+                                                <div className="flex gap-3">
+                                                    <FiMapPin className="mt-1 shrink-0 text-[var(--primary)]" />
+
+                                                    <div>
+                                                        <h3 className="text-sm font-bold text-[var(--text)]">
+                                                            {address.full_name}
+                                                        </h3>
+
+                                                        <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
+                                                            {address.address_line_1}
+                                                            {address.address_line_2
+                                                                ? `, ${address.address_line_2}`
+                                                                : ""}
+                                                            , {address.city}, {address.state} - {address.pincode}
+                                                        </p>
+
+                                                        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                                                            Phone: {address.phone}
+                                                        </p>
+
+                                                        {address.is_default && (
+                                                            <span className="mt-3 inline-block rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-bold text-white">
+                                                                Default
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Quick Actions */}
