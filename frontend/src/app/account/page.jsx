@@ -148,8 +148,8 @@ export default function AccountPage() {
                                         
 
                                             <p className="text-sm leading-6 text-[var(--text-secondary)]">
-                                                    No saved addresses yet. You can add a delivery address during checkout.
-                                                </p>
+                                                    No saved addresses yet. You can manage addresses during checkout.
+                                            </p>
                                             
                                     </div>
                                 ) : (

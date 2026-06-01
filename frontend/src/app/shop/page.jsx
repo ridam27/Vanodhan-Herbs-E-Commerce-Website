@@ -1,8 +1,10 @@
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/products";
 
-export default function ShopPage() {
+export default async function ShopPage() {
+    const products = await getProducts();
+
     return (
         <main className="min-h-screen bg-[var(--bg)] text-[var(--text)] transition-colors duration-300">
             <Navbar />
@@ -31,6 +33,7 @@ export default function ShopPage() {
                                 image={product.image}
                                 name={product.name}
                                 price={product.price}
+                                discount={product.discount}
                                 rating={product.rating}
                                 reviews={product.reviews}
                                 tag={product.tag}

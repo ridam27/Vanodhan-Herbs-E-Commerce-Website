@@ -114,7 +114,7 @@ export const products = [
         id: 4,
         slug: "sitopaladi-churna",
         name: "Sitopaladi Churna",
-        price: 249,
+        price: 349,
         discount: 30,
         stock: true,
         delivery: "3-5 business days",

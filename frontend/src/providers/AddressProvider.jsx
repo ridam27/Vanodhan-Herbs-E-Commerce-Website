@@ -53,6 +53,18 @@ export function AddressProvider({ children }) {
     const addAddress = async (address) => {
         if (!user) return { error: "User not logged in" };
 
+        if (address.is_default) {
+            const { error: updateError } = await supabase
+                .from("addresses")
+                .update({ is_default: false })
+                .eq("user_id", user.id);
+
+            if (updateError) {
+                console.error("Error clearing default addresses:", updateError.message);
+                return { error: updateError.message };
+            }
+        }
+
         const { error } = await supabase.from("addresses").insert({
             user_id: user.id,
             ...address,
@@ -60,6 +72,35 @@ export function AddressProvider({ children }) {
 
         if (error) {
             console.error("Error adding address:", error.message);
+            return { error: error.message };
+        }
+
+        await loadAddresses();
+        return { error: null };
+    };
+
+    const updateAddress = async (addressId, updatedAddress) => {
+        if (!user) return { error: "User not logged in" };
+
+        if (updatedAddress.is_default) {
+            const { error: updateError } = await supabase
+                .from("addresses")
+                .update({ is_default: false })
+                .eq("user_id", user.id);
+
+            if (updateError) {
+                return { error: updateError.message };
+            }
+        }
+
+        const { error } = await supabase
+            .from("addresses")
+            .update(updatedAddress)
+            .eq("user_id", user.id)
+            .eq("id", addressId);
+
+        if (error) {
+            console.error("Error updating address:", error.message);
             return { error: error.message };
         }
 
@@ -91,6 +132,7 @@ export function AddressProvider({ children }) {
                 addressLoading,
                 loadAddresses,
                 addAddress,
+                updateAddress,
                 deleteAddress,
             }}
         >

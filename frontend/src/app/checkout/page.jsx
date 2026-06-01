@@ -6,15 +6,16 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useCart } from "@/providers/CartProvider";
 import { useAddress } from "@/providers/AddressProvider";
 import { useEffect, useState } from "react";
-import { FiMapPin, FiPlus, FiShoppingBag } from "react-icons/fi";
+import { FiMapPin, FiPlus, FiShoppingBag, FiTrash2, FiEdit2, } from "react-icons/fi";
 
 export default function CheckoutPage() {
     const { user, authLoading } = useAuth();
     const { cartItems, cartTotal } = useCart();
-    const { addresses, addressLoading, addAddress } = useAddress();
+    const { addresses, addressLoading, addAddress, updateAddress, deleteAddress } = useAddress();
 
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [showAddressForm, setShowAddressForm] = useState(false);
+    const [editingAddressId, setEditingAddressId] = useState(null);
 
     const [form, setForm] = useState({
         full_name: "",
@@ -27,6 +28,39 @@ export default function CheckoutPage() {
         country: "India",
         is_default: false,
     });
+
+    const handleEditAddress = (address) => {
+        setEditingAddressId(address.id);
+        setShowAddressForm(true);
+
+        setForm({
+            full_name: address.full_name,
+            phone: address.phone,
+            address_line_1: address.address_line_1,
+            address_line_2: address.address_line_2 || "",
+            city: address.city,
+            state: address.state,
+            pincode: address.pincode,
+            country: address.country || "India",
+            is_default: address.is_default || false,
+        });
+    };
+
+    const resetAddressForm = () => {
+        setEditingAddressId(null);
+
+        setForm({
+            full_name: "",
+            phone: "",
+            address_line_1: "",
+            address_line_2: "",
+            city: "",
+            state: "",
+            pincode: "",
+            country: "India",
+            is_default: false,
+        });
+    };
 
     const deliveryCharge = cartTotal >= 499 ? 0 : 50;
     const finalTotal = cartTotal + deliveryCharge;
@@ -103,21 +137,13 @@ export default function CheckoutPage() {
     const handleAddAddress = async (e) => {
         e.preventDefault();
 
-        const { error } = await addAddress(form);
+        const result = editingAddressId
+            ? await updateAddress(editingAddressId, form)
+            : await addAddress(form);
 
-        if (!error) {
+        if (!result.error) {
             setShowAddressForm(false);
-            setForm({
-                full_name: "",
-                phone: "",
-                address_line_1: "",
-                address_line_2: "",
-                city: "",
-                state: "",
-                pincode: "",
-                country: "India",
-                is_default: false,
-            });
+            resetAddressForm();
         }
     };
 
@@ -150,7 +176,15 @@ export default function CheckoutPage() {
                                     </div>
 
                                     <button
-                                        onClick={() => setShowAddressForm((prev) => !prev)}
+                                        onClick={() => {
+                                            if (showAddressForm) {
+                                                setShowAddressForm(false);
+                                                resetAddressForm();
+                                            } else {
+                                                resetAddressForm();
+                                                setShowAddressForm(true);
+                                            }
+                                        }}
                                         className="flex items-center gap-2 rounded-full bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)]"
                                     >
                                         <FiPlus />
@@ -171,9 +205,8 @@ export default function CheckoutPage() {
                                 ) : (
                                     <div className="grid gap-4">
                                         {addresses.map((address) => (
-                                            <button
+                                            <div
                                                 key={address.id}
-                                                onClick={() => setSelectedAddress(address)}
                                                 className="relative rounded-2xl border p-3 text-left transition-all duration-300 hover:bg-[var(--surface-2)] sm:p-4"
                                                 style={{
                                                     borderColor:
@@ -191,30 +224,59 @@ export default function CheckoutPage() {
                                                 }}
                                             >
                                                 {selectedAddress?.id === address.id && (
-                                                    <span className="absolute right-3 top-2 rounded-full bg-[var(--primary)] px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-white shadow-md sm:right-4 sm:top-3 sm:px-3 sm:text-[10px]">
+                                                    <span className="absolute right-3 top-3 rounded-full bg-[var(--primary)] px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-white shadow-md sm:right-4 sm:top-4 sm:px-3 sm:text-[10px]">
                                                         Selected
                                                     </span>
                                                 )}
-                                                <div className="flex gap-3">
-                                                    <FiMapPin className="mt-1 shrink-0 text-[var(--primary)]" size={18} />
 
-                                                    <div>
-                                                        <h3 className="text-xs font-bold text-[var(--text)] sm:text-sm lg:text-base">
-                                                            {address.full_name}
-                                                        </h3>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedAddress(address)}
+                                                    className="w-full text-left"
+                                                >
+                                                    <div className="flex gap-3 pr-20">
+                                                        <FiMapPin className="mt-1 shrink-0 text-[var(--primary)]" size={18} />
 
-                                                        <p className="mt-1 text-[11px] leading-4 text-[var(--text-secondary)] sm:text-sm sm:leading-6">
-                                                            {address.address_line_1}
-                                                            {address.address_line_2 ? `, ${address.address_line_2}` : ""},{" "}
-                                                            {address.city}, {address.state} - {address.pincode}
-                                                        </p>
+                                                        <div>
+                                                            <h3 className="text-xs font-bold text-[var(--text)] sm:text-sm lg:text-base">
+                                                                {address.full_name}
+                                                            </h3>
 
-                                                        <p className="mt-1 text-[11px] text-[var(--text-secondary)] sm:text-sm">
-                                                            Phone: {address.phone}
-                                                        </p>
+                                                            <p className="mt-1 text-[11px] leading-4 text-[var(--text-secondary)] sm:text-sm sm:leading-6">
+                                                                {address.address_line_1}
+                                                                {address.address_line_2 ? `, ${address.address_line_2}` : ""},{" "}
+                                                                {address.city}, {address.state} - {address.pincode}
+                                                            </p>
+
+                                                            <p className="mt-1 text-[11px] text-[var(--text-secondary)] sm:text-sm">
+                                                                Phone: {address.phone}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </button>
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleEditAddress(address)}
+                                                    className="absolute bottom-3 right-14 flex h-9 w-9 items-center justify-center rounded-full text-[var(--primary)] transition hover:bg-[var(--surface-2)]"
+                                                >
+                                                    <FiEdit2 />
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        if (selectedAddress?.id === address.id) {
+                                                            setSelectedAddress(null);
+                                                        }
+
+                                                        await deleteAddress(address.id);
+                                                    }}
+                                                    className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full text-red-500 transition hover:bg-red-50 hover:text-red-600"
+                                                >
+                                                    <FiTrash2 />
+                                                </button>
+                                            </div>
                                         ))}
                                     </div>
                                 )}
@@ -246,7 +308,7 @@ export default function CheckoutPage() {
                                         </label>
 
                                         <button className="rounded-full bg-[var(--primary)] px-6 py-4 font-semibold text-white transition hover:bg-[var(--primary-hover)]">
-                                            Save Address
+                                            {editingAddressId ? "Update Address" : "Save Address"}
                                         </button>
                                     </form>
                                 )}
