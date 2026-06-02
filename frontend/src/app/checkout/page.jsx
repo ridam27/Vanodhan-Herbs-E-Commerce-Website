@@ -7,15 +7,26 @@ import { useCart } from "@/providers/CartProvider";
 import { useAddress } from "@/providers/AddressProvider";
 import { useEffect, useState } from "react";
 import { FiMapPin, FiPlus, FiShoppingBag, FiTrash2, FiEdit2, } from "react-icons/fi";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function CheckoutPage() {
     const { user, authLoading } = useAuth();
-    const { cartItems, cartTotal } = useCart();
+    const { cartItems, cartTotal, getSellingPrice, } = useCart();
     const { addresses, addressLoading, addAddress, updateAddress, deleteAddress } = useAddress();
 
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [showAddressForm, setShowAddressForm] = useState(false);
     const [editingAddressId, setEditingAddressId] = useState(null);
+
+    const [couponCode, setCouponCode] = useState("");
+    const [couponLoading, setCouponLoading] = useState(false);
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponDiscount, setCouponDiscount] = useState(0);
+    const [couponMessage, setCouponMessage] = useState("");
+
+    const [orderLoading, setOrderLoading] = useState(false);
+    const [orderMessage, setOrderMessage] = useState("");
+    const [orderSuccess, setOrderSuccess] = useState(false);
 
     const [form, setForm] = useState({
         full_name: "",
@@ -28,6 +39,99 @@ export default function CheckoutPage() {
         country: "India",
         is_default: false,
     });
+
+    const applyCoupon = async () => {
+        if (!couponCode.trim()) return;
+
+        try {
+            setCouponLoading(true);
+            setCouponMessage("");
+
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
+            const response = await fetch("/api/validate-coupon", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session?.access_token}`,
+                },
+                body: JSON.stringify({
+                    couponCode,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!result.valid) {
+                setAppliedCoupon(null);
+                setCouponDiscount(0);
+                setCouponMessage(result.message);
+                localStorage.removeItem("vanodhan-coupon");
+                return;
+            }
+
+            setAppliedCoupon(result.coupon);
+            setCouponDiscount(result.couponDiscount);
+            setCouponMessage(result.message);
+            localStorage.setItem("vanodhan-coupon", result.coupon.code);
+        } catch (error) {
+            setCouponMessage("Unable to validate coupon.");
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
+    const placeOrder = async () => {
+        if (!selectedAddress) return;
+
+        try {
+            setOrderLoading(true);
+            setOrderMessage("");
+
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
+            if (!session) {
+                setOrderMessage("Please login to place order.");
+                return;
+            }
+
+            const response = await fetch("/api/place-order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                    addressId: selectedAddress.id,
+                    couponCode: appliedCoupon?.code || null,
+                    paymentMethod: "cod",
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                setOrderMessage(result.message);
+                return;
+            }
+
+            localStorage.removeItem("vanodhan-coupon");
+
+            setOrderSuccess(true);
+
+            setTimeout(() => {
+                window.location.href = "/orders";
+            }, 3000);
+        } catch (error) {
+            setOrderMessage("Unable to place order.");
+        } finally {
+            setOrderLoading(false);
+        }
+    };
 
     const handleEditAddress = (address) => {
         setEditingAddressId(address.id);
@@ -63,7 +167,7 @@ export default function CheckoutPage() {
     };
 
     const deliveryCharge = cartTotal >= 499 ? 0 : 50;
-    const finalTotal = cartTotal + deliveryCharge;
+    const finalTotal = cartTotal + deliveryCharge - couponDiscount;
 
     const totalMRP = cartItems.reduce(
         (total, item) => total + item.price * item.quantity,
@@ -80,6 +184,25 @@ export default function CheckoutPage() {
             setSelectedAddress(defaultAddress);
         }
     }, [addresses, selectedAddress]);
+
+    useEffect(() => {
+        const savedCoupon =
+            localStorage.getItem("vanodhan-coupon");
+
+        if (savedCoupon) {
+            setCouponCode(savedCoupon);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (
+            couponCode &&
+            cartItems.length > 0 &&
+            !appliedCoupon
+        ) {
+            applyCoupon();
+        }
+    }, [cartItems.length]);
 
     if (authLoading) return null;
 
@@ -146,6 +269,7 @@ export default function CheckoutPage() {
             resetAddressForm();
         }
     };
+    
 
     return (
         <main className="min-h-screen bg-[var(--bg)] text-[var(--text)] transition-colors duration-300">
@@ -315,75 +439,174 @@ export default function CheckoutPage() {
                             </div>
                         </div>
 
-                        <div className="h-fit rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_8px_25px_var(--shadow)] lg:sticky lg:top-32">
-                            <h2 className="text-2xl font-bold text-[var(--text)]">
-                                Order Summary
-                            </h2>
+                        
 
-                            <div className="mt-6 space-y-4">
-                                {cartItems.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className="flex justify-between gap-4 text-sm"
+                        <div className="h-fit space-y-5 lg:sticky lg:top-32">
+                            {/* Coupon Box */}
+                            <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[0_8px_25px_var(--shadow)]">
+                                <h3 className="mb-4 text-lg font-bold text-[var(--text)]">
+                                    Apply Coupon
+                                </h3>
+
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                        placeholder="Coupon code"
+                                        className="min-w-0 flex-1 rounded-full border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-secondary)]"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={applyCoupon}
+                                        disabled={couponLoading}
+                                        className="shrink-0 rounded-full bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        <span className="text-[var(--text-secondary)]">
-                                            {item.name} × {item.quantity}
-                                        </span>
-                                        <span className="font-medium text-[var(--text)]">
-                                            ₹{item.sellingPrice * item.quantity}
-                                        </span>
-                                    </div>
-                                ))}
+                                        {couponLoading ? "..." : "Apply"}
+                                    </button>
+                                </div>
 
-                                <div className="border-t border-[var(--border)] pt-4">
+                                {couponMessage && (
+                                    <p
+                                        className={`mt-3 text-sm font-medium ${appliedCoupon ? "text-green-600" : "text-red-500"
+                                            }`}
+                                    >
+                                        {couponMessage}
+                                    </p>
+                                )}
+
+                                {appliedCoupon && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setAppliedCoupon(null);
+                                            setCouponDiscount(0);
+                                            setCouponCode("");
+                                            setCouponMessage("");
+
+                                            localStorage.removeItem("vanodhan-coupon");
+                                        }}
+                                        className="mt-2 text-sm font-semibold text-red-500 transition hover:text-red-600"
+                                    >
+                                        Remove Coupon
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Order Summary */}
+                            <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_8px_25px_var(--shadow)]">
+                                <h2 className="text-2xl font-bold text-[var(--text)]">
+                                    Order Summary
+                                </h2>
+
+                                <div className="mt-6 space-y-4">
+                                    {cartItems.map((item) => (
+                                        <div key={item.id} className="flex justify-between gap-4 text-sm">
+                                            <span className="text-[var(--text-secondary)]">
+                                                {item.name} × {item.quantity}
+                                            </span>
+
+                                            <span className="font-medium text-[var(--text)]">
+                                                ₹{getSellingPrice(item) * item.quantity}
+                                            </span>
+                                        </div>
+                                    ))}
+
                                     {totalSavings > 0 && (
-                                        <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                                        <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
                                             You saved ₹{totalSavings}
                                         </div>
                                     )}
 
-                                    <div className="flex justify-between text-[var(--text-secondary)]">
-                                        <span>Subtotal</span>
-                                        <span>₹{cartTotal}</span>
-                                    </div>
+                                    <div className="border-t border-[var(--border)] pt-4">
+                                        <div className="flex justify-between text-[var(--text-secondary)]">
+                                            <span>Subtotal</span>
+                                            <span>₹{cartTotal}</span>
+                                        </div>
 
-                                    <div className="mt-3 flex justify-between text-[var(--text-secondary)]">
-                                        <span>Delivery</span>
-                                        <span>{deliveryCharge === 0 ? "FREE" : `₹${deliveryCharge}`}</span>
-                                    </div>
+                                        <div className="mt-3 flex justify-between text-[var(--text-secondary)]">
+                                            <span>Delivery</span>
+                                            <span>{deliveryCharge === 0 ? "FREE" : `₹${deliveryCharge}`}</span>
+                                        </div>
 
-                                    <div className="mt-4 flex justify-between text-xl font-bold text-[var(--text)]">
-                                        <span>Total</span>
-                                        <span>₹{finalTotal}</span>
+                                        {couponDiscount > 0 && (
+                                            <div className="mt-3 flex justify-between text-green-600">
+                                                <span>Coupon Discount</span>
+                                                <span>-₹{couponDiscount}</span>
+                                            </div>
+                                        )}
+
+                                        <div className="mt-4 flex justify-between text-xl font-bold text-[var(--text)]">
+                                            <span>Total</span>
+                                            <span>₹{finalTotal}</span>
+                                        </div>
                                     </div>
                                 </div>
+
+                                <button
+                                    onClick={placeOrder}
+                                    disabled={!selectedAddress || orderLoading || orderSuccess}
+                                    className="mt-6 hidden w-full items-center justify-center gap-3 rounded-full bg-[var(--primary)] px-6 py-4 font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50 lg:flex"
+                                >
+                                    <FiShoppingBag />
+                                    {orderLoading ? "Placing Order..." : orderSuccess ? "Order Placed" : "Place Order"}
+                                </button>
+
+                                {orderSuccess ? (
+                                    <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-center">
+                                        <p className="font-semibold text-green-700">
+                                            Your order has been placed successfully.
+                                        </p>
+
+                                        <p className="mt-1 text-sm text-green-600">
+                                            Redirecting to Orders page in 3 seconds...
+                                        </p>
+                                    </div>
+                                ) : (
+                                    orderMessage && (
+                                        <p className="mt-3 text-center text-sm text-red-500">
+                                            {orderMessage}
+                                        </p>
+                                    )
+                                )}
+
+                                {!selectedAddress && (
+                                    <p className="mt-3 text-center text-xs text-[var(--text-secondary)]">
+                                        Select an address to place order.
+                                    </p>
+                                )}
                             </div>
-
-                            <button
-                                disabled={!selectedAddress}
-                                className="mt-6 hidden w-full items-center justify-center gap-3 rounded-full bg-[var(--primary)] px-6 py-4 font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50 lg:flex"
-                            >
-                                <FiShoppingBag />
-                                Place Order
-                            </button>
-
-                            {!selectedAddress && (
-                                <p className="mt-3 text-center text-xs text-[var(--text-secondary)]">
-                                    Select an address to place order.
-                                </p>
-                            )}
                         </div>
                     </div>
                 </div>
             </section>
             <div className="fixed bottom-0 left-0 z-50 w-full border-t border-[var(--border)] bg-[var(--surface)] p-4 shadow-[0_-8px_25px_var(--shadow)] lg:hidden">
                 <button
-                    disabled={!selectedAddress}
+                    onClick={placeOrder}
+                    disabled={!selectedAddress || orderLoading || orderSuccess}
                     className="flex w-full items-center justify-center gap-3 rounded-full bg-[var(--primary)] px-6 py-4 font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <FiShoppingBag />
-                    Place Order
+                    {orderLoading ? "Placing Order..." : orderSuccess ? "Order Placed" : "Place Order"}
                 </button>
+                {orderSuccess ? (
+                    <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-center">
+                        <p className="font-semibold text-green-700">
+                            Your order has been placed successfully.
+                        </p>
+
+                        <p className="mt-1 text-sm text-green-600">
+                            Redirecting to Orders page in 3 seconds...
+                        </p>
+                    </div>
+                ) : (
+                    orderMessage && (
+                        <p className="mt-3 text-center text-sm text-red-500">
+                            {orderMessage}
+                        </p>
+                    )
+                )}
             </div>
         </main>
     );

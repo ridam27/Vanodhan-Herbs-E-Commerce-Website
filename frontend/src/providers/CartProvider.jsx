@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/providers/AuthProvider";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/products";
 
 const CartContext = createContext(null);
 
@@ -12,26 +12,54 @@ export function CartProvider({ children }) {
     const [isCartLoaded, setIsCartLoaded] = useState(false);
 
     const { user, isLoggedIn, authLoading } = useAuth();
-
     const hasSyncedCart = useRef(false);
 
     const getSellingPrice = (product) => {
-        const discount = product.discount || 0;
+        const price = Number(product.price || 0);
+        const discount = Number(product.discount || 0);
 
         return discount > 0
-            ? Math.round(product.price - (product.price * discount) / 100)
-            : product.price;
+            ? Math.round(price - (price * discount) / 100)
+            : price;
     };
 
-    const loadGuestCart = () => {
-        const storedCart = localStorage.getItem("vanodhan-cart");
+    const getGuestCart = () => {
+        return JSON.parse(localStorage.getItem("vanodhan-cart") || "[]");
+    };
 
-        if (storedCart) {
-            setCartItems(JSON.parse(storedCart));
-        } else {
-            setCartItems([]);
-        }
+    const saveGuestCart = (items) => {
+        const guestCart = items.map((item) => ({
+            product_id: item.id,
+            quantity: item.quantity,
+        }));
 
+        localStorage.setItem("vanodhan-cart", JSON.stringify(guestCart));
+    };
+
+    const attachProductData = async (rawCart) => {
+        const products = await getProducts();
+
+        return rawCart
+            .map((cartItem) => {
+                const product = products.find(
+                    (p) => Number(p.id) === Number(cartItem.product_id)
+                );
+
+                if (!product) return null;
+
+                return {
+                    ...product,
+                    quantity: Number(cartItem.quantity),
+                };
+            })
+            .filter(Boolean);
+    };
+
+    const loadGuestCart = async () => {
+        const guestCart = getGuestCart();
+        const formattedCart = await attachProductData(guestCart);
+
+        setCartItems(formattedCart);
         setIsCartLoaded(true);
     };
 
@@ -40,26 +68,18 @@ export function CartProvider({ children }) {
 
         const { data, error } = await supabase
             .from("cart_items")
-            .select("*")
+            .select("product_id, quantity")
             .eq("user_id", user.id)
             .order("created_at", { ascending: true });
 
         if (error) {
             console.error("Error loading cart:", error.message);
+            setCartItems([]);
+            setIsCartLoaded(true);
             return;
         }
 
-        const formattedCart = data.map((item) => ({
-            id: item.product_id,
-            slug: item.slug,
-            name: item.name,
-            image: item.image,
-            tag: item.tag,
-            price: item.price,
-            discount: item.discount,
-            sellingPrice: item.selling_price,
-            quantity: item.quantity,
-        }));
+        const formattedCart = await attachProductData(data || []);
 
         setCartItems(formattedCart);
         setIsCartLoaded(true);
@@ -68,17 +88,14 @@ export function CartProvider({ children }) {
     const mergeGuestCartToCloud = async () => {
         if (!user) return;
 
-        const guestCart = JSON.parse(
-            localStorage.getItem("vanodhan-cart") || "[]"
-        );
-
+        const guestCart = getGuestCart();
         if (guestCart.length === 0) return;
 
         localStorage.removeItem("vanodhan-cart");
 
         const { data: cloudItems, error } = await supabase
             .from("cart_items")
-            .select("*")
+            .select("product_id, quantity")
             .eq("user_id", user.id);
 
         if (error) {
@@ -87,32 +104,30 @@ export function CartProvider({ children }) {
         }
 
         for (const guestItem of guestCart) {
-            const existingCloudItem = cloudItems.find(
-                (item) => item.product_id === guestItem.id
+            const existingItem = cloudItems?.find(
+                (item) => Number(item.product_id) === Number(guestItem.product_id)
             );
 
-            const finalQuantity = existingCloudItem
-                ? existingCloudItem.quantity + guestItem.quantity
-                : guestItem.quantity;
+            const finalQuantity = existingItem
+                ? Number(existingItem.quantity) + Number(guestItem.quantity)
+                : Number(guestItem.quantity);
 
-            await supabase.from("cart_items").upsert(
-                {
-                    user_id: user.id,
-                    product_id: guestItem.id,
-                    slug: guestItem.slug,
-                    name: guestItem.name,
-                    image: guestItem.image,
-                    tag: guestItem.tag,
-                    price: guestItem.price,
-                    discount: guestItem.discount || 0,
-                    selling_price:
-                        guestItem.sellingPrice || getSellingPrice(guestItem),
-                    quantity: finalQuantity,
-                },
-                {
-                    onConflict: "user_id,product_id",
-                }
-            );
+            const { error: upsertError } = await supabase
+                .from("cart_items")
+                .upsert(
+                    {
+                        user_id: user.id,
+                        product_id: guestItem.product_id,
+                        quantity: finalQuantity,
+                    },
+                    {
+                        onConflict: "user_id,product_id",
+                    }
+                );
+
+            if (upsertError) {
+                console.error("Error merging cart:", upsertError.message);
+            }
         }
     };
 
@@ -133,34 +148,19 @@ export function CartProvider({ children }) {
             }
 
             hasSyncedCart.current = false;
-            loadGuestCart();
+            await loadGuestCart();
         };
 
         setupCart();
     }, [authLoading, isLoggedIn, user]);
 
-    useEffect(() => {
-        if (!isCartLoaded) return;
-        if (authLoading) return;
-        if (isLoggedIn) return;
-
-        localStorage.setItem("vanodhan-cart", JSON.stringify(cartItems));
-    }, [cartItems, isCartLoaded, authLoading, isLoggedIn]);
-
-    const saveItemToCloud = async (product, quantity, sellingPrice) => {
+    const saveItemToCloud = async (productId, quantity) => {
         if (!user) return;
 
         const { error } = await supabase.from("cart_items").upsert(
             {
                 user_id: user.id,
-                product_id: product.id,
-                slug: product.slug,
-                name: product.name,
-                image: product.image,
-                tag: product.tag,
-                price: product.price,
-                discount: product.discount || 0,
-                selling_price: sellingPrice,
+                product_id: productId,
                 quantity,
             },
             {
@@ -174,89 +174,101 @@ export function CartProvider({ children }) {
     };
 
     const addToCart = async (product, quantity = 1) => {
-        const sellingPrice = getSellingPrice(product);
+        const productId = Number(product.id);
 
         setCartItems((prevItems) => {
-            const existingItem = prevItems.find((item) => item.id === product.id);
+            const existingItem = prevItems.find(
+                (item) => Number(item.id) === productId
+            );
+
+            let updatedCart;
 
             if (existingItem) {
-                const updatedQuantity = existingItem.quantity + quantity;
-
-                if (isLoggedIn && user) {
-                    saveItemToCloud(product, updatedQuantity, sellingPrice);
-                }
-
-                return prevItems.map((item) =>
-                    item.id === product.id
-                        ? { ...item, quantity: updatedQuantity }
+                updatedCart = prevItems.map((item) =>
+                    Number(item.id) === productId
+                        ? {
+                            ...item,
+                            quantity: Number(item.quantity) + Number(quantity),
+                        }
                         : item
                 );
+            } else {
+                updatedCart = [
+                    ...prevItems,
+                    {
+                        ...product,
+                        quantity: Number(quantity),
+                    },
+                ];
             }
+
+            const updatedItem = updatedCart.find(
+                (item) => Number(item.id) === productId
+            );
 
             if (isLoggedIn && user) {
-                saveItemToCloud(product, quantity, sellingPrice);
+                saveItemToCloud(productId, updatedItem.quantity);
+            } else {
+                saveGuestCart(updatedCart);
             }
 
-            return [
-                ...prevItems,
-                {
-                    ...product,
-                    quantity,
-                    sellingPrice,
-                },
-            ];
+            return updatedCart;
         });
-    };
-
-    const updateCloudQuantity = async (productId, quantity) => {
-        if (!user) return;
-
-        const { error } = await supabase
-            .from("cart_items")
-            .update({ quantity })
-            .eq("user_id", user.id)
-            .eq("product_id", productId);
-
-        if (error) {
-            console.error("Error updating cart quantity:", error.message);
-        }
     };
 
     const updateQuantity = async (productId, quantity) => {
         if (quantity < 1) return;
 
-        setCartItems((prevItems) =>
-            prevItems.map((item) =>
-                item.id === productId ? { ...item, quantity } : item
-            )
-        );
+        setCartItems((prevItems) => {
+            const updatedCart = prevItems.map((item) =>
+                Number(item.id) === Number(productId)
+                    ? { ...item, quantity: Number(quantity) }
+                    : item
+            );
+
+            if (!isLoggedIn) {
+                saveGuestCart(updatedCart);
+            }
+
+            return updatedCart;
+        });
 
         if (isLoggedIn && user) {
-            await updateCloudQuantity(productId, quantity);
-        }
-    };
+            const { error } = await supabase
+                .from("cart_items")
+                .update({ quantity })
+                .eq("user_id", user.id)
+                .eq("product_id", productId);
 
-    const removeItemFromCloud = async (productId) => {
-        if (!user) return;
-
-        const { error } = await supabase
-            .from("cart_items")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("product_id", productId);
-
-        if (error) {
-            console.error("Error removing cart item:", error.message);
+            if (error) {
+                console.error("Error updating quantity:", error.message);
+            }
         }
     };
 
     const removeFromCart = async (productId) => {
-        setCartItems((prevItems) =>
-            prevItems.filter((item) => item.id !== productId)
-        );
+        setCartItems((prevItems) => {
+            const updatedCart = prevItems.filter(
+                (item) => Number(item.id) !== Number(productId)
+            );
+
+            if (!isLoggedIn) {
+                saveGuestCart(updatedCart);
+            }
+
+            return updatedCart;
+        });
 
         if (isLoggedIn && user) {
-            await removeItemFromCloud(productId);
+            const { error } = await supabase
+                .from("cart_items")
+                .delete()
+                .eq("user_id", user.id)
+                .eq("product_id", productId);
+
+            if (error) {
+                console.error("Error removing item:", error.message);
+            }
         }
     };
 
@@ -277,12 +289,12 @@ export function CartProvider({ children }) {
     };
 
     const cartCount = cartItems.reduce(
-        (total, item) => total + item.quantity,
+        (total, item) => total + Number(item.quantity),
         0
     );
 
     const cartTotal = cartItems.reduce(
-        (total, item) => total + item.sellingPrice * item.quantity,
+        (total, item) => total + getSellingPrice(item) * Number(item.quantity),
         0
     );
 
@@ -297,6 +309,7 @@ export function CartProvider({ children }) {
                 cartCount,
                 cartTotal,
                 isCartLoaded,
+                getSellingPrice,
             }}
         >
             {children}

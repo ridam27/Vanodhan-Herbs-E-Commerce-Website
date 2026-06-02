@@ -6,7 +6,7 @@ import { useCart } from "@/providers/CartProvider";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 
 export default function CartPage() {
-    const { cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
+    const { cartItems, updateQuantity, removeFromCart, cartTotal, getSellingPrice, } = useCart();
 
     const totalMRP = cartItems.reduce(
         (total, item) => total + item.price * item.quantity,
@@ -99,7 +99,7 @@ export default function CartPage() {
                             <div className="order-2 space-y-3 lg:order-1 lg:max-h-[650px] lg:overflow-y-auto lg:pr-3 lg:[scrollbar-width:none] lg:[&::-webkit-scrollbar]:hidden">
                                 {cartItems.map((item) => {
                                     const itemSaving =
-                                        (item.price - item.sellingPrice) * item.quantity;
+                                        (item.price - getSellingPrice(item)) * item.quantity;
 
                                     return (
                                         <div
@@ -120,10 +120,10 @@ export default function CartPage() {
 
                                                     <div className="mt-2 flex flex-wrap items-end gap-2">
                                                         <p className="text-lg font-bold text-[var(--primary)]">
-                                                            ₹{item.sellingPrice}
+                                                            ₹{getSellingPrice(item)}
                                                         </p>
 
-                                                        {item.price > item.sellingPrice && (
+                                                        {item.price > getSellingPrice(item) && (
                                                             <p className="pb-0.5 text-sm line-through text-[var(--text-secondary)]">
                                                                 ₹{item.price}
                                                             </p>
