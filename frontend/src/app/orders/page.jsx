@@ -114,69 +114,70 @@ export default function OrdersPage() {
                     ) : (
                         <div className="space-y-5">
                             {orders.map((order) => (
-                                <div
+                                <Link href={`/orders/${order.id}`}
                                     key={order.id}
-                                    className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_8px_25px_var(--shadow)]"
                                 >
-                                    <div className="flex flex-wrap items-center justify-between gap-3">
-                                        <div>
-                                            <p className="text-sm text-[var(--text-secondary)]">
-                                                Order ID
-                                            </p>
+                                    <div  className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] mb-2 p-6 shadow-[0_8px_25px_var(--shadow)]">
+                                        <div className="flex flex-wrap items-center justify-between gap-3">
+                                            <div>
+                                                <p className="text-sm text-[var(--text-secondary)]">
+                                                    Order ID
+                                                </p>
 
-                                            <h3 className="font-bold text-[var(--text)]">
-                                                #{order.id.slice(0, 8)}
-                                            </h3>
+                                                <h3 className="font-bold text-[var(--text)]">
+                                                    #{order.id.slice(0, 8)}
+                                                </h3>
+                                            </div>
+
+                                            <span
+                                                className={`rounded-full px-4 py-2 text-sm font-semibold 
+                                                    ${order.status === "cancelled" ||
+                                                        order.status === "pending"
+                                                        ? "bg-red-50 text-red-600"
+                                                        : "bg-green-50 text-green-700"
+                                                    }`}
+                                            >
+                                                {order.status}
+                                            </span>
                                         </div>
 
-                                        <span
-                                            className={`rounded-full px-4 py-2 text-sm font-semibold 
-                                                    ${order.status === "cancelled" ||
-                                                    order.status === "pending"
-                                                    ? "bg-red-50 text-red-600"
-                                                    : "bg-green-50 text-green-700"
-                                                }`}
-                                        >
-                                            {order.status}
-                                        </span>
-                                    </div>
+                                        <div className="mt-5 space-y-3">
+                                            {order.order_items.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="flex items-center gap-4"
+                                                >
+                                                    <img
+                                                        src={item.product_image}
+                                                        alt={item.product_name}
+                                                        className="h-16 w-16 rounded-xl object-cover"
+                                                    />
 
-                                    <div className="mt-5 space-y-3">
-                                        {order.order_items.map((item) => (
-                                            <div
-                                                key={item.id}
-                                                className="flex items-center gap-4"
-                                            >
-                                                <img
-                                                    src={item.product_image}
-                                                    alt={item.product_name}
-                                                    className="h-16 w-16 rounded-xl object-cover"
-                                                />
+                                                    <div className="flex-1">
+                                                        <h4 className="font-semibold text-[var(--text)]">
+                                                            {item.product_name}
+                                                        </h4>
 
-                                                <div className="flex-1">
-                                                    <h4 className="font-semibold text-[var(--text)]">
-                                                        {item.product_name}
-                                                    </h4>
+                                                        <p className="text-sm text-[var(--text-secondary)]">
+                                                            Qty: {item.quantity}
+                                                        </p>
+                                                    </div>
 
-                                                    <p className="text-sm text-[var(--text-secondary)]">
-                                                        Qty: {item.quantity}
+                                                    <p className="font-bold text-[var(--primary)]">
+                                                        ₹{item.line_total}
                                                     </p>
                                                 </div>
+                                            ))}
+                                        </div>
 
-                                                <p className="font-bold text-[var(--primary)]">
-                                                    ₹{item.line_total}
-                                                </p>
+                                        <div className="mt-5 border-t border-[var(--border)] pt-4">
+                                            <div className="flex justify-between font-bold text-[var(--text)]">
+                                                <span>Total</span>
+                                                <span>₹{order.total}</span>
                                             </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="mt-5 border-t border-[var(--border)] pt-4">
-                                        <div className="flex justify-between font-bold text-[var(--text)]">
-                                            <span>Total</span>
-                                            <span>₹{order.total}</span>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     )}
