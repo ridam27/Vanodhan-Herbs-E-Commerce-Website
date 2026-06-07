@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import ProductCard from "@/components/ProductCard";
+import ShopProducts from "@/components/ShopProducts";
 import { getProducts } from "@/lib/products";
 
 export default async function ShopPage() {
@@ -16,31 +16,16 @@ export default async function ShopPage() {
                             Our Store
                         </p>
 
-                        <h1 className="text-4xl font-bold text-[var(--text)] sm:text-5xl">
+                        <h1 className="text-2xl font-bold text-[var(--text)] sm:text-5xl">
                             Shop Ayurvedic Products
                         </h1>
 
-                        <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
+                        {/* <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
                             Explore natural Ayurvedic products crafted for everyday wellness.
-                        </p>
+                        </p> */}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-                        {products.map((product) => (
-                            <ProductCard
-                                key={product.id}
-                                slug={product.slug}
-                                image={product.image}
-                                name={product.name}
-                                price={product.price}
-                                discount={product.discount}
-                                rating={product.rating}
-                                reviews={product.reviews}
-                                tag={product.tag}
-                                badge={product.badge}
-                            />
-                        ))}
-                    </div>
+                    <ShopProducts products={products} />
                 </div>
             </section>
         </main>

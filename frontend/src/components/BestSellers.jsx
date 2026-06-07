@@ -1,11 +1,20 @@
+import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/products";
 
-export default function BestSellers() {
+export default async function BestSellers() {
+    const products = await getProducts();
+
+    const bestSellers = products
+        .filter((product) => product.badge === "Best Seller")
+        .slice(0, 4);
+
+    const displayProducts =
+        bestSellers.length > 0 ? bestSellers : products.slice(0, 4);
+
     return (
         <section className="bg-[var(--bg)] py-16 transition-colors duration-300 sm:py-20 lg:py-24">
             <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-
                 <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                     <div>
                         <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-[var(--primary)]">
@@ -17,26 +26,16 @@ export default function BestSellers() {
                         </h2>
                     </div>
 
-                    <button
-                        className="
-              hidden md:block
-              rounded-full
-              border
-              border-[var(--primary)]
-              px-6 py-3
-              font-medium
-              text-[var(--primary)]
-              transition-all duration-300
-              hover:bg-[var(--primary)]
-              hover:text-white
-            "
+                    <Link
+                        href="/shop"
+                        className="hidden rounded-full border border-[var(--primary)] px-6 py-3 font-medium text-[var(--primary)] transition-all duration-300 hover:bg-[var(--primary)] hover:text-white md:block"
                     >
                         View All Products
-                    </button>
+                    </Link>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-                    {products.map((product) => (
+                    {displayProducts.map((product) => (
                         <ProductCard
                             key={product.id}
                             slug={product.slug}
@@ -51,7 +50,6 @@ export default function BestSellers() {
                         />
                     ))}
                 </div>
-
             </div>
         </section>
     );

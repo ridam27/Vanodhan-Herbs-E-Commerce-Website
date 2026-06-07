@@ -92,17 +92,21 @@ export default function ProductDetailsClient({ product, relatedProducts }) {
                                 {product.tag}
                             </p>
     
-                            <h1 className="text-4xl font-bold leading-tight text-[var(--text)] sm:text-5xl">
+                            <h1 className="text-3xl font-bold leading-tight text-[var(--text)] sm:text-5xl">
                                 {product.name}
                             </h1>
     
-                            <div className="mt-5 flex items-center gap-2 text-[var(--text-secondary)]">
+                            <div className="mt-1 flex items-center gap-2 text-[var(--text-secondary)]">
                                 <FiStar className="fill-yellow-400 text-yellow-400" />
                                 <span>
                                     {product.rating} ({product.reviews} reviews)
                                 </span>
                             </div>
     
+                            <p className="mt-4 max-w-xl text-base leading-8 text-[var(--text-secondary)]">
+                                {product.short_description}
+                            </p>
+
                             <div className="mt-6">
                                 <div className="flex flex-wrap items-end gap-3">
                                     <p className="text-3xl font-bold text-[var(--primary)]">
@@ -156,9 +160,6 @@ export default function ProductDetailsClient({ product, relatedProducts }) {
                                 </p>
                             </div>
     
-                            <p className="mt-6 max-w-xl text-base leading-8 text-[var(--text-secondary)]">
-                                {product.shortDescription}
-                            </p>
     
                             <div className="mt-8">
                                 <h3 className="mb-4 text-xl font-bold text-[var(--text)]">
