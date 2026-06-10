@@ -17,11 +17,11 @@ export default async function ShopPage() {
                         </p>
 
                         <h1 className="text-2xl font-bold text-[var(--text)] sm:text-5xl">
-                            Shop Ayurvedic Products
+                            Shop Herbal Products
                         </h1>
 
                         {/* <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
-                            Explore natural Ayurvedic products crafted for everyday wellness.
+                            Explore natural Herbal products crafted for everyday wellness.
                         </p> */}
                     </div>
 

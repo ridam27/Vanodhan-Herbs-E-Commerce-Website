@@ -20,7 +20,7 @@ export const products = [
         badge: "Best Seller",
 
         shortDescription:
-            "Premium Ayurvedic Ashwagandha powder for daily wellness.",
+            "Premium Herbal Ashwagandha powder for daily wellness.",
 
         benefits: [
             "Supports stress management",
@@ -42,7 +42,7 @@ export const products = [
         slug: "shatavari-kalp",
         name: "Shatavari Kalp",
         price: 349,
-        discount:10,
+        discount: 10,
         stock: true,
         delivery: "3-5 business days",
         image: "/products/shatavari.jpg",
@@ -58,7 +58,7 @@ export const products = [
         badge: "Trending",
 
         shortDescription:
-            "Premium Ayurvedic Ashwagandha powder for daily wellness.",
+            "Premium Herbal Ashwagandha powder for daily wellness.",
 
         benefits: [
             "Supports stress management",
@@ -94,7 +94,7 @@ export const products = [
         badge: "Popular Choice",
 
         shortDescription:
-            "Premium Ayurvedic Ashwagandha powder for daily wellness.",
+            "Premium Herbal Ashwagandha powder for daily wellness.",
 
         benefits: [
             "Supports stress management",
@@ -131,7 +131,7 @@ export const products = [
         // badge: "Customer Fav",
 
         shortDescription:
-            "Premium Ayurvedic Ashwagandha powder for daily wellness.",
+            "Premium Herbal Ashwagandha powder for daily wellness.",
 
         benefits: [
             "Supports stress management",

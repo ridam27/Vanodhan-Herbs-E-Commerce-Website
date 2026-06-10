@@ -38,7 +38,7 @@ export default function CartPage() {
                             </h2>
 
                             <p className="mt-3 text-[var(--text-secondary)]">
-                                Add some Ayurvedic products to continue shopping.
+                                Add some Herbal products to continue shopping.
                             </p>
 
                             <Link
@@ -80,12 +80,12 @@ export default function CartPage() {
                                     </div>
                                 </div>
 
-                                    <Link
-                                        href="/checkout"
-                                        className="mt-6 block w-full rounded-full bg-[var(--primary)] px-6 py-4 text-center font-semibold text-white transition hover:bg-[var(--primary-hover)]"
-                                    >
-                                        Proceed to Checkout
-                                    </Link>
+                                <Link
+                                    href="/checkout"
+                                    className="mt-6 block w-full rounded-full bg-[var(--primary)] px-6 py-4 text-center font-semibold text-white transition hover:bg-[var(--primary-hover)]"
+                                >
+                                    Proceed to Checkout
+                                </Link>
 
                                 <Link
                                     href="/shop"

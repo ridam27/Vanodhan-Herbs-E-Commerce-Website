@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function Hero() {
     return (
         <section
@@ -27,7 +29,7 @@ export default function Hero() {
                             color: "var(--text)",
                         }}
                     >
-                        Pure Ayurvedic Wellness for Everyday Life
+                        Pure Herbal Wellness for Everyday Life
                     </h1>
 
                     <p
@@ -36,45 +38,25 @@ export default function Hero() {
                             color: "var(--text-secondary)",
                         }}
                     >
-                        Discover authentic Ayurvedic and natural dietary products crafted
+                        Discover authentic Herbal and natural dietary products crafted
                         to support your health, wellness, and daily lifestyle.
                     </p>
 
                     <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
 
-                        <button
-                            className="w-full rounded-full px-8 py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 sm:w-auto"
-                            style={{
-                                backgroundColor: "var(--primary)",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    "var(--primary-hover)";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = "var(--primary)";
-                            }}
+                        <Link
+                            href="/shop"
+                            className="w-full rounded-full bg-[var(--primary)] px-8 py-4 text-center font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-[var(--primary-hover)] sm:w-auto"
                         >
                             Shop Now
-                        </button>
+                        </Link>
 
-                        <button
-                            className="w-full rounded-full border px-8 py-4 font-semibold transition-all duration-300 sm:w-auto"
-                            style={{
-                                borderColor: "var(--primary)",
-                                color: "var(--primary)",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = "var(--primary)";
-                                e.currentTarget.style.color = "#ffffff";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = "transparent";
-                                e.currentTarget.style.color = "var(--primary)";
-                            }}
+                        <Link
+                            href="#best-sellers"
+                            className="w-full rounded-full border border-[var(--primary)] px-8 py-4 text-center font-semibold text-[var(--primary)] transition-all duration-300 hover:bg-[var(--primary)] hover:text-white sm:w-auto"
                         >
                             Explore Products
-                        </button>
+                        </Link>
 
                     </div>
                 </div>
@@ -99,7 +81,7 @@ export default function Hero() {
                     >
                         <img
                             src="https://plus.unsplash.com/premium_photo-1661574859504-d706763e4f3e?q=80&w=687&auto=format&fit=crop"
-                            alt="Ayurvedic Products"
+                            alt="Herbal Products"
                             className="h-[320px] w-full rounded-[1.5rem] object-cover sm:h-[420px] lg:h-[500px]"
                         />
                     </div>

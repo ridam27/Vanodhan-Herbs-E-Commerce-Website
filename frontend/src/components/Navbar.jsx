@@ -102,31 +102,13 @@ export default function Navbar() {
 
                     <div className="hidden items-center gap-8 lg:flex">
                         {navLinks.map((item) => (
-                            <button
+                            <Link
                                 key={item.name}
-                                className="relative text-sm font-medium transition-all duration-300 after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-0 after:rounded-full after:transition-all after:duration-300 hover:after:w-full"
-                                style={{
-                                    color: "var(--text)",
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.color = "var(--primary)";
-                                    e.currentTarget.style.setProperty(
-                                        "--tw-after-bg",
-                                        "var(--primary)"
-                                    );
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.color = "var(--text)";
-                                }}
+                                href={item.href}
+                                className="relative text-sm font-medium text-[var(--text)] transition-colors duration-300 hover:text-[var(--primary)] after:absolute after:left-1/2 after:-bottom-1.5 after:h-[2px] after:w-full after:-translate-x-1/2 after:scale-x-0 after:rounded-full after:bg-[var(--primary)] after:transition-transform after:duration-300 hover:after:scale-x-100"
                             >
-                                <span
-                                    className="absolute -bottom-1 left-0 h-[2px] w-0 rounded-full transition-all duration-300 group-hover:w-full"
-                                    style={{ backgroundColor: "var(--primary)" }}
-                                />
-                                <Link href={item.href}>
-                                    {item.name}
-                                </Link>
-                            </button>
+                                {item.name}
+                            </Link>
                         ))}
                     </div>
 

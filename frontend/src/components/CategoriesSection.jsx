@@ -14,7 +14,7 @@ export default function CategoriesSection() {
                     </h2>
 
                     <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
-                        Find Ayurvedic products designed for everyday wellness, care, and healthy living.
+                        Find Herbal products designed for everyday wellness, care, and healthy living.
                     </p>
                 </div>
 

@@ -13,12 +13,12 @@ export const categories = [
     },
     {
         title: "Churna",
-        description: "Traditional Ayurvedic blends for digestion and balance.",
+        description: "Traditional Herbal blends for digestion and balance.",
         icon: GiMedicines,
     },
     {
         title: "Herbal Oils",
-        description: "Ayurvedic oils for hair, skin, and body care.",
+        description: "Herbal oils for hair, skin, and body care.",
         icon: GiOilDrum,
     },
     {

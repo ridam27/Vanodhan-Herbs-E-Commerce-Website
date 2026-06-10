@@ -12,7 +12,7 @@ const features = [
         icon: FiShield,
     },
     {
-        title: "Ayurvedic Wellness",
+        title: "Herbal Wellness",
         description: "Inspired by traditional wellness practices for everyday healthy living.",
         icon: FiCheckCircle,
     },
@@ -42,7 +42,7 @@ export default function WhyChooseUs() {
                                 </p>
 
                                 <h2 className="max-w-xl text-3xl font-bold leading-tight text-[var(--text)] sm:text-4xl lg:text-5xl">
-                                    Trusted Ayurvedic Products for Everyday Wellness
+                                    Trusted Herbal Products for Everyday Wellness
                                 </h2>
 
                                 <p className="mt-5 max-w-lg text-base leading-8 text-[var(--text-secondary)]">

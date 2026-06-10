@@ -13,7 +13,7 @@ export default async function BestSellers() {
         bestSellers.length > 0 ? bestSellers : products.slice(0, 4);
 
     return (
-        <section className="bg-[var(--bg)] py-16 transition-colors duration-300 sm:py-20 lg:py-24">
+        <section id="best-sellers" className="bg-[var(--bg)] py-16 transition-colors duration-300 sm:py-20 lg:py-24">
             <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
                 <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                     <div>
@@ -22,7 +22,7 @@ export default async function BestSellers() {
                         </p>
 
                         <h2 className="text-3xl font-bold text-[var(--text)] sm:text-4xl">
-                            Best Selling Ayurvedic Products
+                            Best Selling Herbal Products
                         </h2>
                     </div>
 

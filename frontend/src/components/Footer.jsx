@@ -44,7 +44,7 @@ export default function Footer() {
                         />
 
                         <p className="max-w-md text-sm leading-7 text-[var(--text-secondary)]">
-                            Vanodhan Herbs brings authentic Ayurvedic wellness products
+                            Vanodhan Herbs brings authentic Herbal wellness products
                             crafted from nature to support healthy and balanced living.
                         </p>
 
@@ -69,8 +69,8 @@ export default function Footer() {
 
                     <ContactItem
                         icon={FiMail}
-                        text="gkale0005@gmail.com"
-                        href="mailto:gkale0005@gmail.com"
+                        text="vanodhanherbs@gmail.com"
+                        href="mailto:vanodhanherbs@gmail.com"
                     />
 
                     <ContactItem

@@ -198,7 +198,7 @@ export default function ProductDetailsClient({ product, relatedProducts, reviews
                                 </p>
 
                                 <p className="text-sm text-[var(--text-secondary)]">
-                                    ✓ Ayurvedic Formulation
+                                    ✓ Herbal Formulation
                                 </p>
 
                                 <p className="text-sm text-[var(--text-secondary)]">
