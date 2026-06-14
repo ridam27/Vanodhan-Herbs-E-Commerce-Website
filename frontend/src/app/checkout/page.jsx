@@ -28,6 +28,8 @@ export default function CheckoutPage() {
     const [orderMessage, setOrderMessage] = useState("");
     const [orderSuccess, setOrderSuccess] = useState(false);
 
+    const [paymentMethod, setPaymentMethod] = useState("cod");
+
     const [form, setForm] = useState({
         full_name: "",
         phone: "",
@@ -108,7 +110,7 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                     addressId: selectedAddress.id,
                     couponCode: appliedCoupon?.code || null,
-                    paymentMethod: "cod",
+                    paymentMethod,
                 }),
             });
 
@@ -120,6 +122,31 @@ export default function CheckoutPage() {
             }
 
             localStorage.removeItem("vanodhan-coupon");
+
+            if (paymentMethod === "phonepe") {
+                setOrderMessage("Redirecting to PhonePe payment...");
+
+                const payResponse = await fetch("/api/phonepe/create-payment", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                        orderId: result.orderId,
+                    }),
+                });
+
+                const payResult = await payResponse.json();
+
+                if (!payResult.success) {
+                    setOrderMessage(payResult.message);
+                    return;
+                }
+
+                window.location.href = payResult.paymentUrl;
+                return;
+            }
 
             setOrderSuccess(true);
 
@@ -269,7 +296,7 @@ export default function CheckoutPage() {
             resetAddressForm();
         }
     };
-    
+
 
     return (
         <main className="min-h-screen bg-[var(--bg)] text-[var(--text)] transition-colors duration-300">
@@ -439,7 +466,7 @@ export default function CheckoutPage() {
                             </div>
                         </div>
 
-                        
+
 
                         <div className="h-fit space-y-5 lg:sticky lg:top-32">
                             {/* Coupon Box */}
@@ -541,6 +568,36 @@ export default function CheckoutPage() {
                                             <span>Total</span>
                                             <span>₹{finalTotal}</span>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
+                                    <h3 className="mb-3 font-bold text-[var(--text)]">
+                                        Payment Method
+                                    </h3>
+
+                                    <div className="grid gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod("cod")}
+                                            className={`rounded-2xl border px-4 py-3 text-left font-semibold transition ${paymentMethod === "cod"
+                                                ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                                                : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+                                                }`}
+                                        >
+                                            Cash on Delivery
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod("phonepe")}
+                                            className={`rounded-2xl border px-4 py-3 text-left font-semibold transition ${paymentMethod === "phonepe"
+                                                ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                                                : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+                                                }`}
+                                        >
+                                            PhonePe / UPI / Cards
+                                        </button>
                                     </div>
                                 </div>
 

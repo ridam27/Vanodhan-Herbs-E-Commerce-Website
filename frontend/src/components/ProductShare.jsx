@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FiShare2, FiCopy } from "react-icons/fi";
+import { FiShare2 } from "react-icons/fi";
 
 export default function ProductShare({ product }) {
     const [copied, setCopied] = useState(false);

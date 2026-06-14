@@ -131,7 +131,7 @@ export async function POST(request) {
             );
         }
 
-        if (!["cod", "razorpay"].includes(paymentMethod)) {
+        if (!["cod", "phonepe"].includes(paymentMethod)) {
             return NextResponse.json(
                 { success: false, message: "Invalid payment method." },
                 { status: 400 }
@@ -267,40 +267,46 @@ export async function POST(request) {
             );
         }
 
-        for (const item of cartItems) {
+        if (paymentMethod === "cod") {
+            for (const item of cartItems) {
+                await supabaseAdmin
+                    .from("products")
+                    .update({
+                        stock_quantity:
+                            Number(item.products.stock_quantity) - Number(item.quantity),
+                    })
+                    .eq("id", item.product_id);
+            }
+
+            if (coupon) {
+                await supabaseAdmin
+                    .from("coupons")
+                    .update({
+                        used_count: Number(coupon.used_count) + 1,
+                    })
+                    .eq("id", coupon.id);
+
+                await supabaseAdmin.from("coupon_redemptions").insert({
+                    coupon_id: coupon.id,
+                    user_id: user.id,
+                    order_id: order.id,
+                });
+            }
+
             await supabaseAdmin
-                .from("products")
-                .update({
-                    stock_quantity:
-                        Number(item.products.stock_quantity) - Number(item.quantity),
-                })
-                .eq("id", item.product_id);
+                .from("cart_items")
+                .delete()
+                .eq("user_id", user.id);
         }
-
-        if (coupon) {
-            await supabaseAdmin
-                .from("coupons")
-                .update({
-                    used_count: Number(coupon.used_count) + 1,
-                })
-                .eq("id", coupon.id);
-
-            await supabaseAdmin.from("coupon_redemptions").insert({
-                coupon_id: coupon.id,
-                user_id: user.id,
-                order_id: order.id,
-            });
-        }
-
-        await supabaseAdmin
-            .from("cart_items")
-            .delete()
-            .eq("user_id", user.id);
 
         return NextResponse.json({
             success: true,
-            message: "Order placed successfully.",
+            message:
+                paymentMethod === "phonepe"
+                    ? "Order created. Continue to payment."
+                    : "Order placed successfully.",
             orderId: order.id,
+            paymentMethod,
         });
     } catch (error) {
         return NextResponse.json(
