@@ -14,17 +14,19 @@ import {
     FiUser,
     FiLogIn,
     FiPackage,
-    FiLogOut
+    FiLogOut,
 } from "react-icons/fi";
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isDark, setIsDark] = useState(false);
+
     const { cartCount, isCartLoaded } = useCart();
+    const { isLoggedIn, logout } = useAuth();
+
     const userMenuRef = useRef(null);
 
-    const { isLoggedIn, logout, authLoading } = useAuth();
     const navLinks = [
         { name: "Home", href: "/" },
         { name: "Shop", href: "/shop" },
@@ -59,10 +61,7 @@ export default function Navbar() {
         document.addEventListener("mousedown", handleClickOutside);
 
         return () => {
-            document.removeEventListener(
-                "mousedown",
-                handleClickOutside
-            );
+            document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
 
@@ -115,129 +114,124 @@ export default function Navbar() {
                     <div className="hidden items-center gap-3 lg:flex">
                         <button
                             onClick={toggleTheme}
-                            className="rounded-full p-3 transition-all duration-300 hover:-translate-y-0.5"
-                            style={{
-                                color: "var(--text)",
-                                backgroundColor: "var(--surface-2)",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.color = "var(--primary)";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.color = "var(--text)";
-                            }}
+                            className="rounded-full bg-[var(--surface-2)] p-3 text-[var(--text)] transition-all duration-300 hover:-translate-y-0.5 hover:text-[var(--primary)]"
                         >
                             {isDark ? <FiSun size={19} /> : <FiMoon size={19} />}
                         </button>
 
-                        {isLoggedIn ? (
-                            <>
-                                <div ref={userMenuRef} className="relative">
-                                    <button
-                                        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                        className="rounded-full p-3 transition-all duration-300 hover:-translate-y-0.5"
-                                        style={{
-                                            color: "var(--text)",
-                                            backgroundColor: "var(--surface-2)",
-                                        }}
-                                    >
-                                        <FiUser size={19} />
-                                    </button>
+                        {isLoggedIn && (
+                            <div ref={userMenuRef} className="relative">
+                                <button
+                                    onClick={() =>
+                                        setIsUserMenuOpen(!isUserMenuOpen)
+                                    }
+                                    className="rounded-full bg-[var(--surface-2)] p-3 text-[var(--text)] transition-all duration-300 hover:-translate-y-0.5 hover:text-[var(--primary)]"
+                                >
+                                    <FiUser size={19} />
+                                </button>
 
-                                    {isUserMenuOpen && (
-                                        <div
-                                            className="absolute right-0 top-14 z-50 w-56 rounded-3xl border p-3 shadow-[0_12px_35px_var(--shadow)]"
-                                            style={{
-                                                backgroundColor: "var(--surface)",
-                                                borderColor: "var(--border)",
+                                {isUserMenuOpen && (
+                                    <div className="absolute right-0 top-14 z-50 w-56 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[0_12px_35px_var(--shadow)]">
+                                        <UserMenuLink
+                                            href="/account"
+                                            icon={<FiUser />}
+                                            text="Account"
+                                        />
+
+                                        <UserMenuLink
+                                            href="/orders"
+                                            icon={<FiPackage />}
+                                            text="Orders"
+                                        />
+
+                                        <UserMenuLink
+                                            href="/cart"
+                                            icon={<FiShoppingBag />}
+                                            text="Cart"
+                                            count={cartCount}
+                                            isCartLoaded={isCartLoaded}
+                                        />
+
+                                        <button
+                                            onClick={() => {
+                                                logout();
+                                                setIsUserMenuOpen(false);
                                             }}
+                                            className="mt-2 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold text-red-500 transition hover:bg-red-50"
                                         >
-                                            <UserMenuLink href="/account" icon={<FiUser />} text="Account" />
-                                            <UserMenuLink href="/orders" icon={<FiPackage />} text="Orders" />
-                                            <UserMenuLink href="/cart" icon={<FiShoppingBag />} text="Cart" />
-
-                                            <button
-                                                onClick={() => {
-                                                    logout();
-                                                    setIsUserMenuOpen(false);
-                                                }}
-                                                className="mt-2 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold text-red-500 transition hover:bg-red-50"
-                                            >
-                                                <FiLogOut />
-                                                Logout
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <Link
-                                    href="/cart"
-                                    className="flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5"
-                                    style={{ backgroundColor: "var(--primary)" }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.backgroundColor = "var(--primary-hover)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.backgroundColor = "var(--primary)";
-                                    }}
-                                >
-                                    <div className="relative">
-                                        <FiShoppingBag size={18} />
-
-                                        {isCartLoaded && cartCount > 0 && (
-                                            <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                                                {cartCount}
-                                            </span>
-                                        )}
+                                            <FiLogOut />
+                                            Logout
+                                        </button>
                                     </div>
+                                )}
+                            </div>
+                        )}
 
-                                    Cart
-                                </Link>
-                            </>
-                        ) : (
-                                <Link
-                                    href="/auth"
-                                    className="flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5"
-                                    style={{ backgroundColor: "var(--primary)" }}
-                                >
-                                    <FiLogIn size={18} />
-                                    Login
-                                </Link>
+                        <Link
+                            href="/cart"
+                            className="flex items-center gap-2 rounded-full bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[var(--primary-hover)]"
+                        >
+                            <div className="relative">
+                                <FiShoppingBag size={18} />
+
+                                {isCartLoaded && cartCount > 0 && (
+                                    <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </div>
+
+                            Cart
+                        </Link>
+
+                        {!isLoggedIn && (
+                            <Link
+                                href="/auth"
+                                className="flex items-center gap-2 rounded-full bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[var(--primary-hover)]"
+                            >
+                                <FiLogIn size={18} />
+                                Login
+                            </Link>
                         )}
                     </div>
 
                     <div className="flex items-center gap-2 lg:hidden">
                         <button
                             onClick={toggleTheme}
-                            className="rounded-full p-3 transition-all duration-300"
-                            style={{
-                                color: "var(--text)",
-                                backgroundColor: "var(--surface-2)",
-                            }}
+                            className="rounded-full bg-[var(--surface-2)] p-3 text-[var(--text)] transition-all duration-300"
                         >
                             {isDark ? <FiSun size={19} /> : <FiMoon size={19} />}
                         </button>
 
-                        <button
-                            onClick={() => setIsMenuOpen(true)}
-                            className="rounded-full p-3 text-white shadow-md transition-all duration-300"
-                            style={{ backgroundColor: "var(--primary)" }}
-                        >
-                            <FiMenu size={22} />
-                        </button>
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsMenuOpen(true)}
+                                className="rounded-full bg-[var(--primary)] p-3 text-white shadow-md transition-all duration-300"
+                            >
+                                <FiMenu size={22} />
+                            </button>
+
+                            {isCartLoaded && cartCount > 0 && (
+                                <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </nav>
             </div>
 
             <div
-                className={`fixed inset-0 z-[60] bg-black/50 transition-opacity duration-300 lg:hidden ${isMenuOpen ? "visible opacity-100" : "invisible opacity-0"
-                    }`}
+                className={`fixed inset-0 z-[60] bg-black/50 transition-opacity duration-300 lg:hidden ${
+                    isMenuOpen ? "visible opacity-100" : "invisible opacity-0"
+                }`}
                 onClick={() => setIsMenuOpen(false)}
             />
 
             <aside
-                className={`fixed right-0 top-0 z-[70] h-full w-[86%] max-w-sm transform border-l border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xl transition-transform duration-500 ease-out lg:hidden ${isMenuOpen ? "translate-x-0" : "translate-x-full"
-                    }`}
+                className={`fixed right-0 top-0 z-[70] h-full w-[86%] max-w-sm transform border-l border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xl transition-transform duration-500 ease-out lg:hidden ${
+                    isMenuOpen ? "translate-x-0" : "translate-x-full"
+                }`}
             >
                 <div className="mb-8 flex items-center justify-between">
                     <img
@@ -268,39 +262,54 @@ export default function Navbar() {
                 </div>
 
                 <div className="mt-8 border-t border-[var(--border)] pt-6">
-                    {isLoggedIn ? (
-                        <div className="flex flex-col gap-3">
-                            <MobileMenuLink
-                                href="/account"
-                                icon={<FiUser />}
-                                text="My Account"
-                                onClick={() => setIsMenuOpen(false)}
-                            />
+                    <div className="flex flex-col gap-3">
+                        {isLoggedIn && (
+                            <>
+                                <MobileMenuLink
+                                    href="/account"
+                                    icon={<FiUser />}
+                                    text="My Account"
+                                    onClick={() => setIsMenuOpen(false)}
+                                />
 
-                            <MobileMenuLink
-                                href="/orders"
-                                icon={<FiPackage />}
-                                text="My Orders"
-                                onClick={() => setIsMenuOpen(false)}
-                            />
+                                <MobileMenuLink
+                                    href="/orders"
+                                    icon={<FiPackage />}
+                                    text="My Orders"
+                                    onClick={() => setIsMenuOpen(false)}
+                                />
+                            </>
+                        )}
 
-                            <Link
-                                href="/cart"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="flex items-center gap-3 rounded-2xl bg-[var(--primary)] px-5 py-4 font-semibold text-white"
-                            >
-                                <div className="relative">
-                                    <FiShoppingBag />
-
-                                    {isCartLoaded && cartCount > 0 && (
-                                        <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                                            {cartCount}
-                                        </span>
-                                    )}
-                                </div>
+                        <Link
+                            href="/cart"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="flex items-center justify-between rounded-2xl bg-[var(--primary)] px-5 py-4 font-semibold text-white"
+                        >
+                            <div className="flex items-center gap-3">
+                                <FiShoppingBag />
                                 Cart
-                            </Link>
+                            </div>
 
+                            {isCartLoaded && cartCount > 0 && (
+                                <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-[var(--primary)]">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
+
+                        {!isLoggedIn && (
+                            <Link
+                                href="/auth"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[var(--surface-2)] px-5 py-4 font-semibold text-[var(--text)] transition hover:text-[var(--primary)]"
+                            >
+                                <FiLogIn />
+                                Login / Sign Up
+                            </Link>
+                        )}
+
+                        {isLoggedIn && (
                             <button
                                 onClick={() => {
                                     logout();
@@ -311,31 +320,30 @@ export default function Navbar() {
                                 <FiLogOut />
                                 Logout
                             </button>
-                        </div>
-                    ) : (
-                        <Link
-                            href="/auth"
-                            onClick={() => setIsMenuOpen(false)}
-                            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[var(--primary)] px-5 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--primary-hover)]"
-                        >
-                            <FiLogIn />
-                            Login / Sign Up
-                        </Link>
-                    )}
+                        )}
+                    </div>
                 </div>
             </aside>
         </>
     );
 }
 
-function UserMenuLink({ href, icon, text }) {
+function UserMenuLink({ href, icon, text, count, isCartLoaded }) {
     return (
         <Link
             href={href}
-            className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+            className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-2)]"
         >
-            {icon}
-            {text}
+            <span className="flex items-center gap-3">
+                {icon}
+                {text}
+            </span>
+
+            {isCartLoaded && count > 0 && (
+                <span className="rounded-full bg-[var(--primary)] px-2 py-0.5 text-[10px] font-bold text-white">
+                    {count}
+                </span>
+            )}
         </Link>
     );
 }

@@ -7,6 +7,7 @@ import ProductCard from "@/components/ProductCard";
 import RatingsReviews from "@/components/RatingsReviews";
 import ProductGallery from "@/components/ProductGallery";
 import { useCart } from "@/providers/CartProvider";
+import ProductShare from "@/components/ProductShare";
 
 import {
     FiChevronRight,
@@ -249,15 +250,24 @@ export default function ProductDetailsClient({ product, relatedProducts, reviews
                             </div>
                         </div>
 
-                        <button
-                            onClick={() => addToCart(product, quantity)}
-                            disabled={!product.stock_quantity}
-                            className={`mt-8 flex items-center gap-3 rounded-full px-8 py-4 font-semibold text-white transition-all duration-300
-                                            ${product.stock_quantity ? "bg-[var(--primary)] hover:-translate-y-1 hover:bg-[var(--primary-hover)] hover:shadow-lg"
-                                    : "cursor-not-allowed bg-gray-400"}`}>
-                            <FiShoppingBag />
-                            {product.stock_quantity ? "Add to Cart" : "Out of Stock"}
-                        </button>
+                        <div className="mt-8 flex items-center gap-3">
+                            <button
+                                onClick={() => addToCart(product, quantity)}
+                                disabled={!product.stock_quantity}
+                                className={`flex flex-1 items-center justify-center gap-3 rounded-full px-8 py-4 font-semibold text-white transition-all duration-300
+                                        ${product.stock_quantity
+                                        ? "bg-[var(--primary)] hover:-translate-y-1 hover:bg-[var(--primary-hover)] hover:shadow-lg"
+                                        : "cursor-not-allowed bg-gray-400"
+                                    }`}
+                            >
+                                <FiShoppingBag />
+                                {product.stock_quantity ? "Add to Cart" : "Out of Stock"}
+                            </button>
+
+                            <div className="shrink-0">
+                                <ProductShare product={product} />
+                            </div>
+                        </div>
                     </div>
 
                 </div>
