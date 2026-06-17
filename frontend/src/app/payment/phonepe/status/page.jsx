@@ -13,9 +13,14 @@ export default function PhonePeStatusPage() {
 
     const [status, setStatus] = useState("verifying");
     const [message, setMessage] = useState("Verifying your payment...");
+    const [attempt, setAttempt] = useState(1);
 
     useEffect(() => {
+        let cancelled = false;
+
         const verifyPayment = async () => {
+            const maxAttempts = 5;
+
             try {
                 if (!orderId) {
                     setStatus("failed");
@@ -33,36 +38,54 @@ export default function PhonePeStatusPage() {
                     return;
                 }
 
-                const response = await fetch("/api/phonepe/verify-payment", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${session.access_token}`,
-                    },
-                    body: JSON.stringify({ orderId }),
-                });
+                for (let i = 1; i <= maxAttempts; i++) {
+                    if (cancelled) return;
 
-                const result = await response.json();
+                    setAttempt(i);
+                    setMessage(`Verifying your payment... Attempt ${i}/${maxAttempts}`);
 
-                if (!result.success) {
-                    setStatus("failed");
-                    setMessage(result.message || "Payment verification failed.");
-                    return;
+                    const response = await fetch("/api/phonepe/verify-payment", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                        body: JSON.stringify({ orderId }),
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        setStatus("success");
+                        setMessage("Payment successful. Your order has been confirmed.");
+
+                        setTimeout(() => {
+                            window.location.href = `/orders/${orderId}`;
+                        }, 3000);
+
+                        return;
+                    }
+
+                    if (i < maxAttempts) {
+                        await new Promise((resolve) => setTimeout(resolve, 3000));
+                    } else {
+                        setStatus("failed");
+                        setMessage(result.message || "Payment verification failed.");
+                    }
                 }
-
-                setStatus("success");
-                setMessage("Payment successful. Your order has been confirmed.");
-
-                setTimeout(() => {
-                    window.location.href = `/orders/${orderId}`;
-                }, 3000);
             } catch (error) {
-                setStatus("failed");
-                setMessage("Unable to verify payment.");
+                if (!cancelled) {
+                    setStatus("failed");
+                    setMessage("Unable to verify payment.");
+                }
             }
         };
 
         verifyPayment();
+
+        return () => {
+            cancelled = true;
+        };
     }, [orderId]);
 
     return (
@@ -104,6 +127,12 @@ export default function PhonePeStatusPage() {
                         {message}
                     </p>
 
+                    {status === "verifying" && (
+                        <p className="mt-3 text-xs text-[var(--text-secondary)]">
+                            Please do not close or refresh this page.
+                        </p>
+                    )}
+
                     {status === "success" && (
                         <p className="mt-3 text-xs text-[var(--text-secondary)]">
                             Redirecting to your order in 3 seconds...
@@ -112,12 +141,13 @@ export default function PhonePeStatusPage() {
 
                     {status === "failed" && (
                         <div className="mt-6 flex flex-col gap-3">
-                            <Link
-                                href="/checkout"
+                            <button
+                                type="button"
+                                onClick={() => window.location.reload()}
                                 className="rounded-full bg-[var(--primary)] px-6 py-3 font-semibold text-white"
                             >
-                                Try Again
-                            </Link>
+                                Verify Again
+                            </button>
 
                             <Link
                                 href="/orders"
