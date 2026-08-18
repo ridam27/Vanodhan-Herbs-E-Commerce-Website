@@ -85,7 +85,7 @@ The project should remain production-ready at every stage.
 # 4. Folder Structure
 
 ``` text
-frontend/
+vanodhan-herbs/
 └── src/
     ├── app/
     ├── components/
