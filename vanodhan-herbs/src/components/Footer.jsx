@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
     FiMail,
     FiPhone,
@@ -9,20 +10,25 @@ import {
 
 export default function Footer() {
 
-    const quickLinks = ["Home", "Shop", "About", "Contact"];
+    const quickLinks = [
+        { name: "Home", href: "/" },
+        { name: "Shop", href: "/shop" },
+        { name: "About", href: "/about" },
+        { name: "Contact", href: "/contact" },
+    ];
 
     const shopLinks = [
-        "Herbal Powders",
-        "Churna",
-        "Herbal Oils",
-        "Wellness Products",
+        { name: "Herbal Powders", href: "/shop" },
+        { name: "Churna", href: "/shop" },
+        { name: "Herbal Oils", href: "/shop" },
+        { name: "Wellness Products", href: "/shop" },
     ];
 
     const legalLinks = [
-        "Privacy Policy",
-        "Terms & Conditions",
-        "Shipping Policy",
-        "Refund Policy",
+        { name: "Privacy Policy", href: "#" },
+        { name: "Terms & Conditions", href: "#" },
+        { name: "Shipping Policy", href: "#" },
+        { name: "Refund Policy", href: "#" },
     ];
 
     return (
@@ -40,7 +46,12 @@ export default function Footer() {
                         <img
                             src="/logo-light.png"
                             alt="Vanodhan Herbs"
-                            className="mb-6 h-16 w-auto"
+                            className="mb-6 h-16 w-auto block dark:hidden"
+                        />
+                        <img
+                            src="/logo-dark.png"
+                            alt="Vanodhan Herbs"
+                            className="mb-6 h-16 w-auto hidden dark:block"
                         />
 
                         <p className="max-w-md text-sm leading-7 text-[var(--text-secondary)]">
@@ -82,8 +93,7 @@ export default function Footer() {
                     <ContactItem
                         icon={FiMapPin}
                         text="760, Uttam Town, Inzapur, Dist. Wardha - 442001"
-                        // href="maps.app.goo.gl/KFVRXwwjCvU18DAV6"
-                        href="#"
+                        href="https://maps.app.goo.gl/KFVRXwwjCvU18DAV6"
                     />
                 </div>
 
@@ -120,8 +130,9 @@ function FooterColumn({ title, links }) {
 
             <div className="flex flex-col gap-3">
                 {links.map((link) => (
-                    <button
-                        key={link}
+                    <Link
+                        key={link.name}
+                        href={link.href}
                         className="group flex items-center gap-2 text-left text-sm text-[var(--text-secondary)] transition-all duration-300 hover:text-[var(--primary)]"
                     >
                         <FiArrowRight
@@ -134,8 +145,8 @@ function FooterColumn({ title, links }) {
               "
                         />
 
-                        {link}
-                    </button>
+                        {link.name}
+                    </Link>
                 ))}
             </div>
         </div>
