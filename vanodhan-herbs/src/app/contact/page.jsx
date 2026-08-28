@@ -1,8 +1,9 @@
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ContactForm from "@/components/ContactForm";
+import ContactSection from "@/components/ContactSection";
 import FaqAccordion from "@/components/FaqAccordion";
-import { FiPhone, FiMail, FiMapPin, FiClock, FiMessageCircle, FiMap, FiShield, FiHeadphones } from "react-icons/fi";
+import { FiPhone, FiMail, FiMapPin, FiClock, FiMessageCircle, FiMap, FiShield, FiHeadphones, FiList } from "react-icons/fi";
 
 export const metadata = {
     title: "Contact Us | Vanodhan Herbs - Ayurvedic Wellness & Customer Care",
@@ -52,6 +53,16 @@ export default function ContactPage() {
                         <p className="mt-6 text-lg text-[var(--text-secondary)] leading-relaxed">
                             Have questions about our authentic Ayurvedic formulations, order delivery, or dosage guidance? Our dedicated herbal experts are eager to help.
                         </p>
+
+                        <div className="mt-8 flex justify-center">
+                            <Link
+                                href="/contact/tickets"
+                                className="inline-flex items-center gap-2 rounded-full border border-[var(--primary)] bg-[var(--primary-light)] px-6 py-3 text-sm font-bold text-[var(--primary)] shadow-sm transition-all hover:bg-[var(--primary)] hover:text-white hover:scale-105"
+                            >
+                                <FiList size={18} />
+                                <span>Track My Support Tickets</span>
+                            </Link>
+                        </div>
                     </div>
 
                     {/* Contact Channels Grid */}
@@ -107,53 +118,8 @@ export default function ContactPage() {
                 </div>
             </section>
 
-            {/* Contact Form Section */}
-            <section className="py-12 bg-[var(--bg)]">
-                <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-                    <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr] lg:items-start">
-                        {/* Left Side Content & Guarantee */}
-                        <div className="space-y-8">
-                            <div>
-                                <p className="text-sm font-bold uppercase tracking-widest text-[var(--primary)]">
-                                    Send Us a Message
-                                </p>
-                                <h2 className="mt-3 text-3xl font-extrabold text-[var(--text)] sm:text-4xl">
-                                    Have a Specific Query or Need Herbal Advice?
-                                </h2>
-                                <p className="mt-4 text-base text-[var(--text-secondary)] leading-relaxed">
-                                    Whether you need recommendation on choosing the right herbal formulation or have an inquiry regarding your recent order, fill out the form and our specialist team will connect with you promptly.
-                                </p>
-                            </div>
-
-                            {/* Trust Guarantee Cards */}
-                            <div className="space-y-4">
-                                <div className="flex items-start gap-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
-                                        <FiShield size={20} />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-[var(--text)]">24-Hour Response Guarantee</h4>
-                                        <p className="mt-1 text-sm text-[var(--text-secondary)]">We respect your time and respond to all customer inquiries within 24 hours.</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-start gap-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
-                                        <FiMessageCircle size={20} />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-[var(--text)]">Direct Herbal Guidance</h4>
-                                        <p className="mt-1 text-sm text-[var(--text-secondary)]">Get personalized usage advice directly from experienced botanical specialists.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right Side Form */}
-                        <ContactForm />
-                    </div>
-                </div>
-            </section>
+            {/* Contact Form & Live Support Tickets Section */}
+            <ContactSection />
 
             {/* FAQs Section */}
             <section className="py-20 bg-[var(--surface)]/50 border-y border-[var(--border)]">
