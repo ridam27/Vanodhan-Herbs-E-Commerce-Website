@@ -267,6 +267,7 @@ export default function ContactForm({ onQuerySubmitted }) {
                                 >
                                     <option value="General Inquiry">General Inquiry</option>
                                     <option value="Order Status & Shipping">Order Status & Shipping</option>
+                                    <option value="Payment Status & Failure">Payment Status & Failure</option>
                                     <option value="Herbal Usage Advice">Herbal Product & Usage Advice</option>
                                     <option value="Wholesale & Bulk Orders">Wholesale & Bulk Orders</option>
                                 </select>

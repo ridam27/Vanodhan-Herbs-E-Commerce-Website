@@ -100,7 +100,7 @@ export default function ContactPage() {
                             </div>
                             <h3 className="mt-6 text-xl font-bold text-[var(--text)]">Our Location</h3>
                             <p className="mt-2 text-sm text-[var(--text-secondary)]">Headquarters & Store</p>
-                            <p className="mt-4 text-xs font-medium text-[var(--text)] leading-relaxed">
+                            <p className="mt-4 text-sm font-semibold text-[var(--primary)] leading-relaxed">
                                 760, Uttam Town, Inzapur, Wardha - 442001
                             </p>
                         </div>

@@ -55,6 +55,7 @@ This specification details the end-to-end architecture, database schema, securit
 CREATE TYPE query_category AS ENUM (
     'General Inquiry',
     'Order Status & Shipping',
+    'Payment Status & Failure',
     'Herbal Usage Advice',
     'Wholesale & Bulk Orders'
 );

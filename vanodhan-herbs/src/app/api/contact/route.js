@@ -9,6 +9,7 @@ const supabaseAdmin = createClient(
 const VALID_INQUIRY_TYPES = [
     "General Inquiry",
     "Order Status & Shipping",
+    "Payment Status & Failure",
     "Herbal Usage Advice",
     "Wholesale & Bulk Orders",
 ];
