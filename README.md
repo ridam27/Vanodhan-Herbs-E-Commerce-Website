@@ -1,4 +1,4 @@
-# 🌿 Vanodhan Herbs — Customer E-Commerce Platform
+# 🌿 Vanodhan Herbs — E-Commerce Platform
 
 [![Website](https://img.shields.io/badge/Website-www.vanodhanherbs.com-00C853?style=for-the-badge&logo=google-chrome)](https://www.vanodhanherbs.com)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2+-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -7,7 +7,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Database_%26_Auth-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
 
-🌐 **Live Website**: [www.vanodhanherbs.com](https://www.vanodhanherbs.com)
+🌐 **Live Website**: <a href="https://www.vanodhanherbs.com" target="_blank" rel="noopener noreferrer">www.vanodhanherbs.com</a>
 
 **Vanodhan Herbs** is a modern, high-performance customer-facing e-commerce application crafted for authentic Ayurvedic formulations, herbal teas, wellness powders, and organic remedies. Built on top of **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, and **Supabase**, it delivers an intuitive shopping experience, dynamic product filtering, seamless checkout with payment gateway support, customer account management, and a dedicated customer support ticketing portal.
 
