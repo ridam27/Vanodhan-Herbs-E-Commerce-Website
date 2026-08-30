@@ -12,35 +12,27 @@
 
 ## 🚀 Key Modules & Capabilities
 
-### 🛍️ Storefront & Dynamic Product Catalog (`/shop`, `/product/[slug]`)
-- **Product Catalog (`/shop`)**: Browse authentic Ayurvedic formulations with real-time category filtering, search, price range sliders, sorting (Price: Low to High, High to Low, Newest), and stock availability indicators.
-- **Product Detail Pages (`/product/[slug]`)**: Rich product showcases featuring dynamic image galleries ([`ProductGallery.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/ProductGallery.jsx)), key ingredients breakdown, herbal usage & dosage instructions, stock badges, customer ratings & reviews ([`RatingsReviews.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/RatingsReviews.jsx)), and social media sharing ([`ProductShare.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/ProductShare.jsx)).
+### 🛍️ Storefront & Product Catalog (`/shop`, `/product/[slug]`)
+- **Catalog & Search**: Filter products by category, price range, and stock availability with real-time search and sorting.
+- **Product Showcase**: Detailed pages with ingredients, usage dosage, image gallery carousel ([`ProductGallery.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/ProductGallery.jsx)), and customer reviews ([`RatingsReviews.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/RatingsReviews.jsx)).
 
-### 🛒 Smart Cart & Checkout Engine (`/cart`, `/checkout`)
-- **Interactive Cart System**: Slide-over drawer and cart page with real-time quantity modifiers, item removal, and subtotal calculation.
-- **Coupon & Promo Engine**: Serverless discount validation route (`/api/validate-coupon`) verifying coupon eligibility, minimum purchase thresholds, percentage/flat discounts, and maximum discount caps.
-- **Flexible Checkout Flow (`/checkout`)**:
-  - Shipping address collection & validation.
-  - **PhonePe Payment Gateway Integration** (`/api/phonepe`): Online UPI & card processing with secure transaction callbacks.
-  - **Cash on Delivery (COD)**: Instant order placement for eligible pin codes.
-  - Order Placement Endpoint (`/api/place-order`): Creates order records, decreases product stock, and generates unique order numbers.
+### 🛒 Cart & Checkout Engine (`/cart`, `/checkout`)
+- **Cart Management**: Real-time quantity adjustments, subtotal updates, and coupon discount validation (`/api/validate-coupon`).
+- **Payment & Order Placement**: Supports PhonePe gateway (`/api/phonepe`), Cash on Delivery (COD), and atomic stock reduction (`/api/place-order`).
 
 ### 👤 Customer Accounts & Order Tracking (`/account`, `/orders`)
-- **Account Dashboard (`/account`)**: Customer profile management, saved shipping addresses, personal contact details, and quick links.
-- **Order History & Real-Time Tracking (`/orders`)**: View past purchases, order itemization, payment mode (PhonePe vs. COD), and step-by-step order fulfillment timeline status (`Pending` ➔ `Confirmed` ➔ `Packed` ➔ `Shipped` ➔ `Delivered`).
+- **Profile & Addresses**: Manage profile info, contact details, and saved delivery addresses (`/account`).
+- **Order Tracking**: Monitor past purchases and live fulfillment status (`Pending` ➔ `Confirmed` ➔ `Packed` ➔ `Shipped` ➔ `Delivered`).
 
-### 📞 Customer Support & Ticket Tracker Portal (`/contact`, `/contact/tickets`)
-- **Interactive Contact Form ([`ContactForm.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/ContactForm.jsx))**: Query classification (*General Inquiry*, *Order Status & Shipping*, *Payment Status & Failure*, *Herbal Usage Advice*, *Wholesale & Bulk Orders*).
-- **SessionStorage Draft Preservation**: Unauthenticated submit attempts preserve typed content in `sessionStorage` (`vanodhan_contact_draft`), present a login modal prompt, and auto-rehydrate text upon login completion without user data loss.
-- **Dedicated Ticket Tracker Portal (`/contact/tickets`)**: Authenticated support area allowing customers to track submitted queries, check real-time status badges (`Pending Review`, `Under Review`, `Resolved`), view ticket IDs (`#TK-...`), and read official specialist team responses (`admin_notes`).
-- **Store Locator & FAQs**: Wardha store physical address, Google Maps directions, and interactive accordion FAQs ([`FaqAccordion.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/FaqAccordion.jsx)).
+### 📞 Customer Support & Ticket Portal (`/contact`, `/contact/tickets`)
+- **Smart Contact Form**: Multi-category query submission with `sessionStorage` draft auto-preservation for unauthenticated visitors.
+- **Support Ticket Tracker**: Dedicated customer portal (`/contact/tickets`) to track query statuses (`Pending Review`, `Under Review`, `Resolved`) and admin responses.
 
 ### 🌿 Brand Story & Quality Pillars (`/about`)
-- **Brand Heritage Page**: Company statistics, 4-pillar quality philosophy (*100% Organic*, *Ethical Sourcing*, *Lab Tested*, *Ancient Formulations*), and 4-step processing timeline.
+- **Brand Heritage**: Overview of company origins, 4-pillar quality philosophy (100% Organic, Ethical Sourcing, Lab Tested, Ancient Formulations), and processing workflow.
 
 ### 🎨 Dynamic Light / Dark Aesthetic
-- **Universal Theme Switcher**: Automatic system preference detection and manual toggle via [`ThemeProvider.js`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/providers/ThemeProvider.js).
-- **Dynamic Brand Logos**: Automatic logo switching across header navbar and footer (`/logo-light.png` and `/logo-dark.png`).
+- **Adaptive Theme System**: Smooth dark/light mode toggle with dynamic logo switching (`logo-light.png` / `logo-dark.png`) across header and footer.
 
 ---
 
@@ -122,7 +114,6 @@ vanodhan-herbs/
 │   │   ├── ContactForm.jsx               # Contact form with draft persistence
 │   │   ├── UserSupportTickets.jsx        # Customer ticket tracking component
 │   │   ├── ContactSection.jsx            # Quick contact link section
-│   │   ├── FaqAccordion.jsx              # Accordion FAQ component
 │   │   └── WhyChooseUs.jsx               # 4-pillar quality features section
 │   ├── lib/                              # Supabase browser & admin client helpers
 │   └── providers/                        # Global context providers
