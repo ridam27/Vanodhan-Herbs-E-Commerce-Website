@@ -1,53 +1,81 @@
-# 🌿 Vanodhan Herbs — Authentic Ayurvedic E-Commerce Platform
+# 🌿 Vanodhan Herbs — Customer E-Commerce Platform
 
-[![Next.js](https://img.shields.io/badge/Next.js-14+-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0+-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2+-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.0+-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0+-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database_%26_Auth-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
 
-**Vanodhan Herbs** is a modern, premium e-commerce web application crafted for authentic Ayurvedic and herbal wellness products. Built with Next.js App Router, Tailwind CSS, and Supabase, it offers a seamless shopping experience, real-time cart and order management, dynamic light/dark mode styling, and an integrated customer support ticketing portal.
+**Vanodhan Herbs** is a modern, high-performance customer-facing e-commerce application crafted for authentic Ayurvedic formulations, herbal teas, wellness powders, and organic remedies. Built on top of **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, and **Supabase**, it delivers an intuitive shopping experience, dynamic product filtering, seamless checkout with payment gateway support, customer account management, and a dedicated customer support ticketing portal.
 
 ---
 
-## 🚀 Key Features
+## 🚀 Key Modules & Capabilities
 
-### 🛍️ E-Commerce & Shopping Experience
-- **Dynamic Product Catalog (`/shop`)**: Filter and search through authentic herbal products, powders, oils, and Ayurvedic formulations.
-- **Detailed Product Pages (`/product/[slug]`)**: Dosage instructions, ingredients list, customer reviews, and usage guidance.
-- **Cart & Checkout Flow (`/cart`, `/checkout`)**: Real-time quantity validation, coupon redemption engine, and PhonePe / Cash on Delivery payment gateways.
+### 🛍️ Storefront & Dynamic Product Catalog (`/shop`, `/product/[slug]`)
+- **Product Catalog (`/shop`)**: Browse authentic Ayurvedic formulations with real-time category filtering, search, price range sliders, sorting (Price: Low to High, High to Low, Newest), and stock availability indicators.
+- **Product Detail Pages (`/product/[slug]`)**: Rich product showcases featuring dynamic image galleries ([`ProductGallery.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/ProductGallery.jsx)), key ingredients breakdown, herbal usage & dosage instructions, stock badges, customer ratings & reviews ([`RatingsReviews.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/RatingsReviews.jsx)), and social media sharing ([`ProductShare.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/ProductShare.jsx)).
 
-### 📜 Brand Story & Heritage (`/about`)
-- **Interactive About Page**: Features company statistics, 4-pillar quality philosophy (100% Organic, Ethical Sourcing, Lab Tested, Ancient Formulations), 4-step processing timeline, and custom ambient primary gradient cards.
+### 🛒 Smart Cart & Checkout Engine (`/cart`, `/checkout`)
+- **Interactive Cart System**: Slide-over drawer and cart page with real-time quantity modifiers, item removal, and subtotal calculation.
+- **Coupon & Promo Engine**: Serverless discount validation route (`/api/validate-coupon`) verifying coupon eligibility, minimum purchase thresholds, percentage/flat discounts, and maximum discount caps.
+- **Flexible Checkout Flow (`/checkout`)**:
+  - Shipping address collection & validation.
+  - **PhonePe Payment Gateway Integration** (`/api/phonepe`): Online UPI & card processing with secure transaction callbacks.
+  - **Cash on Delivery (COD)**: Instant order placement for eligible pin codes.
+  - Order Placement Endpoint (`/api/place-order`): Creates order records, decreases product stock, and generates unique order numbers.
 
-### 📞 Contact & Customer Support Portal (`/contact`, `/contact/tickets`)
-- **Interactive Contact Form**: Category selector (*General Inquiry*, *Order Status & Shipping*, *Payment Status & Failure*, *Herbal Usage Advice*, *Wholesale & Bulk Orders*).
-- **Zero Data-Loss Draft Preservation**: Unauthenticated submit attempts automatically store typed text in `sessionStorage` (`vanodhan_contact_draft`) with an instant login modal prompt and auto-rehydration upon authentication return.
-- **Dedicated Ticket Portal (`/contact/tickets`)**: Real-time customer support portal where users track past queries, status badges (`Pending Review`, `Under Review`, `Resolved`), and read official responses from the Vanodhan Herbs specialist team (`admin_notes`).
-- **Store Map & FAQs**: Wardha store address, Google Maps directions link, and expandable FAQ accordion.
+### 👤 Customer Accounts & Order Tracking (`/account`, `/orders`)
+- **Account Dashboard (`/account`)**: Customer profile management, saved shipping addresses, personal contact details, and quick links.
+- **Order History & Real-Time Tracking (`/orders`)**: View past purchases, order itemization, payment mode (PhonePe vs. COD), and step-by-step order fulfillment timeline status (`Pending` ➔ `Confirmed` ➔ `Packed` ➔ `Shipped` ➔ `Delivered`).
 
-### 🎨 Premium Aesthetics & UX
-- **Dynamic Dark/Light Mode**: Automatic theme switching across all components, including dynamic logo swapping in Navbar and Footer (`/logo-light.png` and `/logo-dark.png`).
-- **Rich Motion & Micro-Animations**: Smooth glassmorphism, responsive hover states, ambient glowing backdrops, and mobile-friendly responsive navigation.
+### 📞 Customer Support & Ticket Tracker Portal (`/contact`, `/contact/tickets`)
+- **Interactive Contact Form ([`ContactForm.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/ContactForm.jsx))**: Query classification (*General Inquiry*, *Order Status & Shipping*, *Payment Status & Failure*, *Herbal Usage Advice*, *Wholesale & Bulk Orders*).
+- **SessionStorage Draft Preservation**: Unauthenticated submit attempts preserve typed content in `sessionStorage` (`vanodhan_contact_draft`), present a login modal prompt, and auto-rehydrate text upon login completion without user data loss.
+- **Dedicated Ticket Tracker Portal (`/contact/tickets`)**: Authenticated support area allowing customers to track submitted queries, check real-time status badges (`Pending Review`, `Under Review`, `Resolved`), view ticket IDs (`#TK-...`), and read official specialist team responses (`admin_notes`).
+- **Store Locator & FAQs**: Wardha store physical address, Google Maps directions, and interactive accordion FAQs ([`FaqAccordion.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/components/FaqAccordion.jsx)).
+
+### 🌿 Brand Story & Quality Pillars (`/about`)
+- **Brand Heritage Page**: Company statistics, 4-pillar quality philosophy (*100% Organic*, *Ethical Sourcing*, *Lab Tested*, *Ancient Formulations*), and 4-step processing timeline.
+
+### 🎨 Dynamic Light / Dark Aesthetic
+- **Universal Theme Switcher**: Automatic system preference detection and manual toggle via [`ThemeProvider.js`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/providers/ThemeProvider.js).
+- **Dynamic Brand Logos**: Automatic logo switching across header navbar and footer (`/logo-light.png` and `/logo-dark.png`).
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology |
+| Architecture Layer | Technology |
 | :--- | :--- |
-| **Framework** | [Next.js App Router](https://nextjs.org/) (JavaScript / JSX) |
-| **Styling** | Vanilla CSS Tokens + [Tailwind CSS](https://tailwindcss.com/) |
-| **Icons** | [React Icons](https://react-icons.github.io/react-icons/) (Feather Icons `fi`) |
+| **Framework** | [Next.js 16 (App Router)](https://nextjs.org/) (JavaScript ES6+) |
+| **Core UI Library** | [React 19](https://react.dev/) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) & Vanilla CSS Design Tokens |
+| **Icons** | [React Icons](https://react-icons.github.io/react-icons/) (Feather `fi`, Lucide `lu`) |
 | **Database & Auth** | [Supabase](https://supabase.com/) (PostgreSQL, Auth JWT, Row Level Security) |
-| **API Architecture** | Next.js Serverless API Routes (`/api/contact`, etc.) |
+| **HTTP Client** | Axios & Fetch API |
+| **Payment Gateway** | PhonePe PG API & Cash on Delivery |
+
+---
+
+## ⚡ Serverless API Endpoints
+
+| Route | Method | Description |
+| :--- | :--- | :--- |
+| `/api/contact` | `POST` | Validates, sanitizes, rate-limits, and submits user support queries to `public.support_queries`. |
+| `/api/place-order` | `POST` | Atomically creates customer order, validates stock, and records order items in database. |
+| `/api/validate-coupon` | `POST` | Validates active promo codes against minimum spend rules and returns calculated discounts. |
+| `/api/phonepe` | `POST` | Initiates PhonePe PG checksum generation and handles transaction status verification callbacks. |
 
 ---
 
 ## 🔒 Security & Data Integrity Standards
 
-- **Server-Side Auth Verification**: Serverless API routes verify Supabase Bearer JWT tokens (`supabaseAdmin.auth.getUser(token)`) before executing database insertions.
-- **XSS HTML Sanitization**: Server-side string escaping on all user inputs (`full_name`, `phone`, `subject`, `message`).
-- **Rate Limiting**: Enforces a maximum of **2 ticket submissions per 15-minute window** per user/IP address.
-- **Parameterized Queries**: All database queries utilize Supabase SDK methods to eliminate raw SQL string concatenation and prevent SQL injection.
+1. **Server-Side Auth Verification**: Serverless API routes verify Supabase Bearer JWT tokens (`supabaseAdmin.auth.getUser(token)`) prior to executing database actions.
+2. **XSS Input Sanitization**: Server-side string escaping and HTML entity encoding on all user inputs (`full_name`, `phone`, `subject`, `message`).
+3. **Rate Limiting**: Enforces a strict threshold of **maximum 2 ticket submissions per 15-minute window** per user/IP address.
+4. **SQL Injection Defense**: All database operations rely on Supabase ORM parameterized queries to prevent SQL injection vulnerabilities.
+5. **Row Level Security (RLS)**: PostgreSQL policies isolate user data so customers can only access their own orders and support tickets.
 
 ---
 
@@ -55,29 +83,54 @@
 
 ```text
 vanodhan-herbs/
-├── Docs/                                 # Architectural specifications & DB setup scripts
-│   ├── Contact_Form_Backend_Architecture.md
-│   ├── Admin_Support_Queries_Database_Setup.sql
-│   └── Database/                         # Volume 2 Database Documentation (Chapters 1–9)
-├── public/                               # Static images, product assets & brand logos
+├── Docs/                                 # Technical architecture & DB documentation
+│   ├── Admin_development.md              # Operations panel specs
+│   ├── Contact_Form_Backend_Architecture.md # Support ticket architecture
+│   ├── Vanodhan_Herbs_Master_Documentation_Volume_1.md
+│   └── Database/                         # Schema & Volume 2 specs (Chapters 1–9)
+├── public/                               # Brand logos, product images & assets
 ├── src/
-│   ├── app/                              # Next.js App Router pages & API routes
-│   │   ├── page.jsx                      # Homepage
-│   │   ├── about/page.jsx                # About Us page
-│   │   ├── contact/                      # Contact page & dedicated tickets portal
-│   │   │   ├── page.jsx                  # /contact
-│   │   │   └── tickets/page.jsx          # /contact/tickets
-│   │   ├── api/contact/route.js          # Serverless contact API route
-│   │   ├── shop/page.jsx                 # Product Catalog
-│   │   └── product/[slug]/page.jsx       # Product Details
-│   ├── components/                       # Reusable UI components
+│   ├── app/                              # Next.js App Router (Pages & API routes)
+│   │   ├── page.js                       # Storefront Homepage
+│   │   ├── about/page.jsx                # Brand Heritage page
+│   │   ├── account/page.jsx              # User Account Profile page
+│   │   ├── auth/                         # Authentication pages
+│   │   ├── cart/page.jsx                 # Shopping Cart page
+│   │   ├── checkout/page.jsx             # Checkout page
+│   │   ├── contact/                      # Contact & Support Tickets
+│   │   │   ├── page.jsx                  # /contact (Contact Form)
+│   │   │   └── tickets/page.jsx          # /contact/tickets (Ticket Tracker)
+│   │   ├── orders/page.jsx               # Order History & Tracking page
+│   │   ├── shop/page.jsx                 # Product Catalog page
+│   │   ├── product/[slug]/page.jsx       # Dynamic Product Details page
+│   │   └── api/                          # Serverless API routes
+│   │       ├── contact/route.js          # Support ticket submission endpoint
+│   │       ├── phonepe/route.js          # PhonePe gateway handler
+│   │       ├── place-order/route.js      # Order processing endpoint
+│   │       └── validate-coupon/route.js  # Coupon validation endpoint
+│   ├── components/                       # UI Components
 │   │   ├── Navbar.jsx                    # Header & Theme switcher
-│   │   ├── Footer.jsx                    # Dynamic footer
+│   │   ├── Footer.jsx                    # Footer with dynamic logo
+│   │   ├── Hero.jsx                      # Hero banner carousel
+│   │   ├── CategoriesSection.jsx         # Product category cards
+│   │   ├── BestSellers.jsx               # Featured products grid
+│   │   ├── ProductCard.jsx               # Individual product item card
+│   │   ├── ShopProducts.jsx              # Catalog grid with filters & sorting
+│   │   ├── ProductGallery.jsx            # Multi-image product gallery
+│   │   ├── ProductShare.jsx              # Social sharing menu
+│   │   ├── RatingsReviews.jsx            # Customer reviews & rating breakdown
 │   │   ├── ContactForm.jsx               # Contact form with draft persistence
-│   │   ├── UserSupportTickets.jsx        # Support ticket tracker component
-│   │   └── ContactSection.jsx            # Form & ticket tracking link card
-│   ├── lib/                              # Supabase browser client helpers
-│   └── providers/                        # Auth & Theme context providers
+│   │   ├── UserSupportTickets.jsx        # Customer ticket tracking component
+│   │   ├── ContactSection.jsx            # Quick contact link section
+│   │   ├── FaqAccordion.jsx              # Accordion FAQ component
+│   │   └── WhyChooseUs.jsx               # 4-pillar quality features section
+│   ├── lib/                              # Supabase browser & admin client helpers
+│   └── providers/                        # Global context providers
+│       ├── AuthProvider.js               # Supabase Auth context
+│       └── ThemeProvider.js              # Dark/Light mode context
+├── package.json
+├── next.config.mjs
+└── postcss.config.mjs
 ```
 
 ---
@@ -85,25 +138,36 @@ vanodhan-herbs/
 ## ⚙️ Local Development Setup
 
 ### 1. Prerequisites
-- Node.js (v18.0 or higher)
-- npm or yarn
+- **Node.js**: v18.0.0 or higher
+- **Package Manager**: `npm` (v9+) or `yarn` / `pnpm`
 
 ### 2. Clone & Install Dependencies
+Navigate to the customer application directory and install NPM packages:
+
 ```bash
 cd vanodhan-herbs
 npm install
 ```
 
 ### 3. Environment Configuration
-Create a `.env.local` file in the root of `vanodhan-herbs`:
+Create a `.env.local` file in the `vanodhan-herbs` root directory:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-supabase-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+
+# PhonePe Payment Gateway (Optional / Sandbox)
+PHONEPE_MERCHANT_ID=your_merchant_id
+PHONEPE_SALT_KEY=your_salt_key
+PHONEPE_SALT_INDEX=1
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
-### 4. Run Development Server
+### 4. Start Development Server
+Run the Next.js development server on **Port 3000**:
+
 ```bash
 npm run dev
 ```
@@ -113,5 +177,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ---
 
 ## 📜 Documentation References
-- [Contact Form Backend Architecture](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/Contact_Form_Backend_Architecture.md)
-- [Volume 2 Chapter 9 — Support Queries & Tickets DB Specification](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/Database/Vanodhan_Herbs_Volume_2_Chapter_9_Support_Queries_and_Tickets.md)
+- 📄 [Contact Form Backend Architecture Specification](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/Contact_Form_Backend_Architecture.md)
+- 📄 [Volume 2 Chapter 9 — Support Queries & Tickets DB Specification](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/Database/Vanodhan_Herbs_Volume_2_Chapter_9_Support_Queries_and_Tickets.md)
+- 📄 [Master Documentation Volume 1](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/Vanodhan_Herbs_Master_Documentation_Volume_1.md)
