@@ -1,10 +1,13 @@
 # 🌿 Vanodhan Herbs — Customer E-Commerce Platform
 
+[![Website](https://img.shields.io/badge/Website-www.vanodhanherbs.com-00C853?style=for-the-badge&logo=google-chrome)](https://www.vanodhanherbs.com)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2+-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0+-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0+-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database_%26_Auth-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+
+🌐 **Live Website**: [www.vanodhanherbs.com](https://www.vanodhanherbs.com)
 
 **Vanodhan Herbs** is a modern, high-performance customer-facing e-commerce application crafted for authentic Ayurvedic formulations, herbal teas, wellness powders, and organic remedies. Built on top of **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, and **Supabase**, it delivers an intuitive shopping experience, dynamic product filtering, seamless checkout with payment gateway support, customer account management, and a dedicated customer support ticketing portal.
 
@@ -166,8 +169,3 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
-
-## 📜 Documentation References
-- 📄 [Contact Form Backend Architecture Specification](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/Contact_Form_Backend_Architecture.md)
-- 📄 [Volume 2 Chapter 9 — Support Queries & Tickets DB Specification](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/Database/Vanodhan_Herbs_Volume_2_Chapter_9_Support_Queries_and_Tickets.md)
-- 📄 [Master Documentation Volume 1](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/Vanodhan_Herbs_Master_Documentation_Volume_1.md)
