@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import Navbar from "@/components/Navbar";
 import { FcGoogle } from "react-icons/fc";
@@ -8,6 +9,9 @@ import { FiPhone, FiArrowRight } from "react-icons/fi";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function AuthPage() {
+    const searchParams = useSearchParams();
+    const redirectUrl = searchParams.get("redirect") || "/";
+
     const [otpSent, setOtpSent] = useState(false);
     const [mobile, setMobile] = useState("");
     const [otp, setOtp] = useState("");
@@ -15,10 +19,13 @@ export default function AuthPage() {
     const [message, setMessage] = useState("");
 
     const handleGoogleLogin = async () => {
+        const origin = window.location.origin;
+        const callbackUrl = `${origin}/auth/callback?redirect=${encodeURIComponent(redirectUrl)}`;
+
         await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-                redirectTo: "http://localhost:3000",
+                redirectTo: callbackUrl,
             },
         });
     };
@@ -59,7 +66,7 @@ export default function AuthPage() {
             setMessage(error.message);
         } else {
             setMessage("Login successful.");
-            window.location.href = "/";
+            window.location.href = redirectUrl;
         }
 
         setLoading(false);

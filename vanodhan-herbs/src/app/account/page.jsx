@@ -43,16 +43,24 @@ export default function AccountPage() {
         );
     }
 
+    const googleIdentity = user?.identities?.find(
+        (id) => id.provider === "google"
+    )?.identity_data;
+
     const fullName =
         user?.user_metadata?.full_name ||
         user?.user_metadata?.name ||
+        googleIdentity?.full_name ||
+        googleIdentity?.name ||
         "Vanodhan Customer";
 
     const avatar =
         user?.user_metadata?.avatar_url ||
-        user?.user_metadata?.picture;
+        user?.user_metadata?.picture ||
+        googleIdentity?.avatar_url ||
+        googleIdentity?.picture;
 
-    const email = user?.email || "Not available";
+    const email = user?.email || googleIdentity?.email || "Not available";
 
     const memberSince = user?.created_at
         ? new Date(user.created_at).toLocaleDateString("en-IN", {

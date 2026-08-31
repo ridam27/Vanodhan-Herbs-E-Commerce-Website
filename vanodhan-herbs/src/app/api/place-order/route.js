@@ -118,6 +118,30 @@ export async function POST(request) {
             );
         }
 
+        // Mandatory Server-Side Dual Identity Verification Check
+        const hasPhone = Boolean(
+            user.phone && String(user.phone).trim().length >= 10
+        );
+        const hasGoogle = Boolean(
+            user.identities?.some((id) => id.provider === "google") ||
+            user.app_metadata?.providers?.includes("google") ||
+            (user.app_metadata?.provider === "google" && user.email)
+        );
+
+        if (!hasPhone || !hasGoogle) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    code: "PROFILE_INCOMPLETE",
+                    message:
+                        "Mandatory profile completion required before checkout. Both Google account and verified phone number must be linked.",
+                    hasPhone,
+                    hasGoogle,
+                },
+                { status: 403 }
+            );
+        }
+
         const body = await request.json();
 
         const addressId = body.addressId;

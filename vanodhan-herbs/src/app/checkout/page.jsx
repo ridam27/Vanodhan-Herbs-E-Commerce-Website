@@ -10,7 +10,7 @@ import { FiMapPin, FiPlus, FiShoppingBag, FiTrash2, FiEdit2, } from "react-icons
 import { supabase } from "@/lib/supabaseClient";
 
 export default function CheckoutPage() {
-    const { user, authLoading } = useAuth();
+    const { user, authLoading, profileStatus, setShowVerificationModal } = useAuth();
     const { cartItems, cartTotal, getSellingPrice, } = useCart();
     const { addresses, addressLoading, addAddress, updateAddress, deleteAddress } = useAddress();
 
@@ -118,6 +118,9 @@ export default function CheckoutPage() {
 
             if (!result.success) {
                 setOrderMessage(result.message);
+                if (result.code === "PROFILE_INCOMPLETE") {
+                    setShowVerificationModal(true);
+                }
                 return;
             }
 
