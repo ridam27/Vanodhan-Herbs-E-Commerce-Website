@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 import Navbar from "@/components/Navbar";
@@ -8,7 +8,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FiPhone, FiArrowRight } from "react-icons/fi";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function AuthPage() {
+function AuthFormContent() {
     const searchParams = useSearchParams();
     const redirectUrl = searchParams.get("redirect") || "/";
 
@@ -176,5 +176,24 @@ export default function AuthPage() {
                 </div>
             </section>
         </main>
+    );
+}
+
+export default function AuthPage() {
+    return (
+        <Suspense
+            fallback={
+                <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+                    <Navbar />
+                    <section className="flex min-h-screen items-center justify-center px-5 pt-32 pb-16 sm:px-6 lg:px-8">
+                        <div className="w-full max-w-md rounded-[2rem] border border-[var(--border)] bg-[var(--surface)] p-8 text-center shadow-[0_10px_35px_var(--shadow)]">
+                            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent" />
+                        </div>
+                    </section>
+                </main>
+            }
+        >
+            <AuthFormContent />
+        </Suspense>
     );
 }
