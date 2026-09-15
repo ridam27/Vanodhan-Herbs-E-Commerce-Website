@@ -12,6 +12,8 @@ import {
     FiCreditCard,
     FiCopy,
     FiTruck,
+    FiDownload,
+    FiLock,
 } from "react-icons/fi";
 
 export default function OrderDetailsPage({ params }) {
@@ -20,8 +22,10 @@ export default function OrderDetailsPage({ params }) {
 
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
-
     const [copied, setCopied] = useState(false);
+
+    const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+    const [invoiceError, setInvoiceError] = useState("");
 
     useEffect(() => {
         const loadOrder = async () => {
@@ -137,6 +141,65 @@ export default function OrderDetailsPage({ params }) {
             </main>
         );
     }
+
+    const isDelivered = order.status === "delivered";
+    const isPaid = order.payment_status === "paid";
+    const canDownloadInvoice = isDelivered && isPaid;
+
+    let disabledReason = "";
+    if (!isDelivered && !isPaid) {
+        disabledReason =
+            "Invoice will be available after order delivery and payment completion.";
+    } else if (!isDelivered) {
+        disabledReason = "Invoice will be available after order delivery.";
+    } else if (!isPaid) {
+        disabledReason = "Invoice will be available after payment completion.";
+    }
+
+    const handleDownloadInvoice = async () => {
+        try {
+            setDownloadingInvoice(true);
+            setInvoiceError("");
+
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
+            if (!session?.access_token) {
+                setInvoiceError("Session expired. Please login again.");
+                setDownloadingInvoice(false);
+                return;
+            }
+
+            const res = await fetch(`/api/orders/${order.id}/invoice`, {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                setInvoiceError(errData.error || "Failed to download invoice.");
+                setDownloadingInvoice(false);
+                return;
+            }
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Invoice-VH-${order.id.slice(0, 8).toUpperCase()}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Download invoice exception:", err);
+            setInvoiceError("Failed to download tax invoice.");
+        } finally {
+            setDownloadingInvoice(false);
+        }
+    };
 
     const address = order.addresses;
 
@@ -448,6 +511,44 @@ export default function OrderDetailsPage({ params }) {
                                                 {order.payment_method}
                                             </span>
                                         </div>
+                                    </div>
+
+                                    {/* Invoice Section */}
+                                    <div className="mt-5 border-t border-[var(--border)] pt-5">
+                                        <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--primary)]">
+                                            Order Invoice
+                                        </h3>
+
+                                        {canDownloadInvoice ? (
+                                            <button
+                                                type="button"
+                                                onClick={handleDownloadInvoice}
+                                                disabled={downloadingInvoice}
+                                                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--primary)] px-4 py-3.5 text-sm font-bold text-white transition-all duration-300 hover:bg-[var(--primary-hover)] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                                            >
+                                                <FiDownload size={18} />
+                                                {downloadingInvoice
+                                                    ? "Generating PDF..."
+                                                    : "Download Invoice"}
+                                            </button>
+                                        ) : (
+                                            <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4 text-center">
+                                                <div className="flex items-center justify-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
+                                                    <FiLock size={15} className="text-amber-500" />
+                                                    <span>Invoice Unavailable</span>
+                                                </div>
+
+                                                <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                                                    {disabledReason}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {invoiceError && (
+                                            <p className="mt-3 text-center text-xs font-medium text-red-500">
+                                                {invoiceError}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
