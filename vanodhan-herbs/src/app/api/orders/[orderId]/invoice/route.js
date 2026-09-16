@@ -36,20 +36,30 @@ function numberToWords(num) {
     return `${words} Rupees Only`;
 }
 
+// Helper for Indian Currency Formatting
+function formatAmount(amt) {
+    const val = Number(amt) || 0;
+    return `Rs. ${val.toLocaleString("en-IN")}`;
+}
+
 export async function GET(request, { params }) {
     try {
         const { orderId } = await params;
+        const searchParams = new URL(request.url).searchParams;
+        const queryToken = searchParams.get("token");
+        const isPreview = searchParams.get("preview") === "true" || searchParams.get("inline") === "true";
 
-        // 1. Authenticate user from Authorization Bearer header
+        // 1. Authenticate user from Authorization Bearer header or token query param
         const authHeader = request.headers.get("authorization");
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        const token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : queryToken;
+
+        if (!token) {
             return NextResponse.json(
                 { error: "Unauthorized access. Bearer token missing." },
                 { status: 401 }
             );
         }
 
-        const token = authHeader.split(" ")[1];
         const {
             data: { user },
             error: authError,
@@ -108,10 +118,26 @@ export async function GET(request, { params }) {
 
         // 5. Generate Invoice PDF using pdf-lib
         const pdfDoc = await PDFDocument.create();
-        const page = pdfDoc.addPage([595.28, 841.89]); // A4 Size in points (Width: 595.28, Height: 841.89)
+        const page = pdfDoc.addPage([595.28, 841.89]); // A4 Size (595.28 x 841.89 pt)
 
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
         const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+        // Alignment & Centering Helpers
+        const drawRightText = (text, rightX, yPos, size, font, color) => {
+            const width = font.widthOfTextAtSize(text, size);
+            page.drawText(text, { x: rightX - width, y: yPos, size, font, color });
+        };
+
+        const drawCenterText = (text, centerX, yPos, size, font, color) => {
+            const width = font.widthOfTextAtSize(text, size);
+            page.drawText(text, { x: centerX - (width / 2), y: yPos, size, font, color });
+        };
+
+        // Calculates exact baseline Y to visually center text of size `fontSize` inside a box of height `boxH` at `boxY`
+        const getCenteredTextY = (boxY, boxH, fontSize) => {
+            return boxY + (boxH - fontSize) / 2 + 1.5;
+        };
 
         // Try embedding logo-light.png from public folder
         let logoImage = null;
@@ -125,70 +151,63 @@ export async function GET(request, { params }) {
             console.error("Logo load error:", logoErr);
         }
 
-        const primaryGreen = rgb(0.18, 0.49, 0.2); // Vanodhan Green (#2E7D32)
-        const darkText = rgb(0.13, 0.15, 0.18);
-        const secondaryText = rgb(0.4, 0.45, 0.5);
-        const borderGray = rgb(0.85, 0.88, 0.9);
-        const tableBg = rgb(0.94, 0.97, 0.94);
+        // Professional Color Palette
+        const primaryGreen = rgb(0.086, 0.396, 0.16); // #166534 / Deep Vanodhan Green
+        const darkText = rgb(0.12, 0.16, 0.21);      // #1f2937 / Slate Dark
+        const secondaryText = rgb(0.38, 0.45, 0.54); // #64748b / Slate Muted
+        const lightBg = rgb(0.94, 0.96, 0.98);       // #f1f5f9 / Table Header Gray
+        const altRowBg = rgb(0.98, 0.99, 0.99);      // #f8fafc / Subtle Row Accent
+        const bannerBg = rgb(0.93, 0.97, 0.93);      // #edf7ee / Paid Green Banner
+        const borderGray = rgb(0.85, 0.88, 0.91);    // #e2e8f0 / Border Gray
 
-        let y = 785;
+        // --- 1. BRANDING HEADER ---
+        const pageHeight = 841.89;
+        const pageHeaderMargin = 22; // Strictly equal spacing above and below logo
 
-        // --- COMPANY BRANDING HEADER ---
+        let headerHeight = 30; // Default height fallback
+        let logoDims = null;
+
         if (logoImage) {
-            const logoDims = logoImage.scale(0.18); // Height ~35px
+            logoDims = logoImage.scale(0.11); // Smaller, elegant logo
+            headerHeight = logoDims.height;
+        }
+
+        const logoTopY = pageHeight - pageHeaderMargin;
+        const logoY = logoTopY - headerHeight;
+        const headerBottomLineY = logoY - pageHeaderMargin; // Equal space below logo to divider line!
+
+        if (logoImage) {
             page.drawImage(logoImage, {
                 x: 40,
-                y: y - 8,
+                y: logoY,
                 width: logoDims.width,
                 height: logoDims.height,
             });
         } else {
             page.drawText("VANODHAN HERBS", {
                 x: 40,
-                y,
-                size: 20,
+                y: logoY + 4,
+                size: 18,
                 font: fontBold,
                 color: primaryGreen,
             });
-
-            y -= 16;
-            page.drawText("100% Pure & Authentic Herbal Care", {
-                x: 40,
-                y,
-                size: 9,
-                font: fontRegular,
-                color: secondaryText,
-            });
-            y += 16;
         }
 
-        page.drawText("INVOICE", {
-            x: 470,
-            y,
-            size: 18,
-            font: fontBold,
-            color: primaryGreen,
-        });
+        // Right side header: INVOICE title and Copy Badge (Vertically aligned with header)
+        const headerCenterY = (logoTopY + logoY) / 2;
+        drawRightText("INVOICE", 555, headerCenterY + 2, 20, fontBold, primaryGreen);
+        drawRightText("Original for Recipient", 555, headerCenterY - 11, 8, fontRegular, secondaryText);
 
-        page.drawText("Original Copy", {
-            x: 470,
-            y: y - 16,
-            size: 9,
-            font: fontRegular,
-            color: secondaryText,
-        });
-
-        y -= 30;
-        // Header Divider Line
+        // Header Divider Line (Equal distance from logo bottom as top edge!)
         page.drawLine({
-            start: { x: 40, y },
-            end: { x: 555, y },
+            start: { x: 40, y: headerBottomLineY },
+            end: { x: 555, y: headerBottomLineY },
             thickness: 1.5,
             color: primaryGreen,
         });
 
-        // --- META INFO SECTION: SOLD BY | BILLED TO | INVOICE DETAILS ---
-        y -= 25;
+        // --- 2. METADATA SECTION (SOLD BY | BILLED TO | INVOICE DETAILS) ---
+        let y = headerBottomLineY - 20;
 
         const address = order.addresses || {};
         const orderDate = new Date(order.created_at).toLocaleDateString("en-IN", {
@@ -197,248 +216,284 @@ export async function GET(request, { params }) {
             year: "numeric",
         });
 
-        // Column 1: SOLD BY (x: 40)
-        page.drawText("SOLD BY:", {
-            x: 40,
-            y,
-            size: 9,
-            font: fontBold,
-            color: primaryGreen,
-        });
+        const col1X = 40;
+        const col2X = 205;
+        const col3X = 375;
 
-        // Column 2: BILLED & SHIPPED TO (x: 200)
-        page.drawText("BILLED & SHIPPED TO:", {
-            x: 200,
-            y,
-            size: 9,
-            font: fontBold,
-            color: primaryGreen,
-        });
-
-        // Column 3: INVOICE DETAILS (x: 375)
-        page.drawText("INVOICE DETAILS:", {
-            x: 375,
-            y,
-            size: 9,
-            font: fontBold,
-            color: primaryGreen,
-        });
-
-        y -= 16;
-        // Sold By details
-        page.drawText("Vanodhan Herbs", {
-            x: 40,
-            y,
-            size: 9,
-            font: fontBold,
-            color: darkText,
-        });
-
-        // Billed To Name
-        page.drawText((address.full_name || "Customer").slice(0, 26), {
-            x: 200,
-            y,
-            size: 9,
-            font: fontBold,
-            color: darkText,
-        });
-
-        // Invoice ID
-        const invoiceId = `INV-VH-${order.id.slice(0, 8).toUpperCase()}`;
-        page.drawText(`Invoice ID: ${invoiceId}`, {
-            x: 375,
-            y,
-            size: 8.5,
-            font: fontBold,
-            color: darkText,
-        });
+        // Column Titles
+        page.drawText("SOLD BY:", { x: col1X, y, size: 8.5, font: fontBold, color: primaryGreen });
+        page.drawText("BILLED & SHIPPED TO:", { x: col2X, y, size: 8.5, font: fontBold, color: primaryGreen });
+        page.drawText("INVOICE DETAILS:", { x: col3X, y, size: 8.5, font: fontBold, color: primaryGreen });
 
         y -= 14;
-        // Sold By Address 1
-        page.drawText("760, Uttam Town, Inzapur,", {
-            x: 40,
-            y,
-            size: 8,
-            font: fontRegular,
-            color: darkText,
-        });
+        // Row 1
+        page.drawText("Vanodhan Herbs", { x: col1X, y, size: 9, font: fontBold, color: darkText });
+        page.drawText((address.full_name || "Customer").slice(0, 26), { x: col2X, y, size: 9, font: fontBold, color: darkText });
+        
+        const invoiceId = `INV-VH-${order.id.slice(0, 8).toUpperCase()}`;
+        page.drawText("Invoice ID:", { x: col3X, y, size: 8.5, font: fontBold, color: darkText });
+        page.drawText(invoiceId, { x: col3X + 54, y, size: 8.5, font: fontBold, color: darkText });
 
-        // Address Line 1 & 2
+        y -= 13;
+        // Row 2
+        page.drawText("760, Uttam Town, Inzapur,", { x: col1X, y, size: 8, font: fontRegular, color: darkText });
         const addrLine1 = address.address_line_1 || "";
         const addrLine2 = address.address_line_2 ? `, ${address.address_line_2}` : "";
-        page.drawText(`${addrLine1}${addrLine2}`.slice(0, 30), {
-            x: 200,
-            y,
-            size: 8.5,
-            font: fontRegular,
-            color: darkText,
-        });
+        page.drawText(`${addrLine1}${addrLine2}`.slice(0, 30), { x: col2X, y, size: 8.5, font: fontRegular, color: darkText });
 
-        // Order Date
-        page.drawText(`Order Date: ${orderDate}`, {
-            x: 375,
-            y,
-            size: 8.5,
-            font: fontRegular,
-            color: darkText,
-        });
+        page.drawText("Order Date:", { x: col3X, y, size: 8.5, font: fontRegular, color: secondaryText });
+        page.drawText(orderDate, { x: col3X + 54, y, size: 8.5, font: fontRegular, color: darkText });
 
-        y -= 14;
-        // Sold By City / District
-        page.drawText("Dist. Wardha - 442001", {
-            x: 40,
-            y,
-            size: 8,
-            font: fontRegular,
-            color: darkText,
-        });
-
-        // City & State
+        y -= 13;
+        // Row 3
+        page.drawText("Dist. Wardha - 442001", { x: col1X, y, size: 8, font: fontRegular, color: darkText });
         const cityState = `${address.city || ""}, ${address.state || ""} - ${address.pincode || ""}`;
-        page.drawText(cityState.slice(0, 30), {
-            x: 200,
-            y,
-            size: 8.5,
-            font: fontRegular,
-            color: darkText,
-        });
+        page.drawText(cityState.slice(0, 30), { x: col2X, y, size: 8.5, font: fontRegular, color: darkText });
 
-        // Payment Status
-        page.drawText(`Payment Status: PAID`, {
-            x: 375,
-            y,
-            size: 8.5,
-            font: fontBold,
-            color: primaryGreen,
-        });
+        page.drawText("Payment Status:", { x: col3X, y, size: 8.5, font: fontRegular, color: secondaryText });
+        page.drawText("PAID", { x: col3X + 72, y, size: 8.5, font: fontBold, color: primaryGreen });
 
-        y -= 14;
-        // Sold By PAN No (Blank)
-        page.drawText("PAN No: _________________", {
-            x: 40,
-            y,
-            size: 8,
-            font: fontRegular,
-            color: secondaryText,
-        });
+        y -= 13;
+        // Row 4
+        page.drawText("Maharashtra, India", { x: col1X, y, size: 8, font: fontRegular, color: secondaryText });
+        page.drawText(`Phone: ${address.phone || "N/A"}`, { x: col2X, y, size: 8.5, font: fontRegular, color: darkText });
 
-        // Customer Phone
-        page.drawText(`Phone: ${address.phone || "N/A"}`, {
-            x: 200,
-            y,
-            size: 8.5,
-            font: fontRegular,
-            color: darkText,
-        });
+        page.drawText("Order ID:", { x: col3X, y, size: 8.5, font: fontRegular, color: secondaryText });
+        page.drawText(order.id, { x: col3X, y: y - 10, size: 7.5, font: fontRegular, color: darkText });
 
-        // Complete Order ID Label
-        page.drawText("Order ID:", {
-            x: 375,
-            y,
-            size: 8.5,
-            font: fontBold,
-            color: darkText,
-        });
+        y -= 13;
+        // Row 5
+        page.drawText("PAN: N/A  |  GSTIN: N/A", { x: col1X, y, size: 8, font: fontRegular, color: secondaryText });
 
-        y -= 14;
-        // Sold By GSTIN (Blank)
-        page.drawText("GSTIN: __________________", {
-            x: 40,
-            y,
-            size: 8,
-            font: fontRegular,
-            color: secondaryText,
-        });
+        y -= 25; // Clean margin before items table
 
-        // Full Complete Order ID String (e.g. Full UUID)
-        page.drawText(order.id, {
-            x: 375,
-            y,
-            size: 7.5,
-            font: fontRegular,
-            color: darkText,
-        });
+        // --- 3. ITEMS TABLE ---
+        const tableHeaderBoxY = y - 22;
+        const tableHeaderBoxH = 22;
 
-        // --- ITEMS TABLE ---
-        y -= 30;
-
-        // Table Header Rectangle
+        // Table Header Banner Rectangle
         page.drawRectangle({
             x: 40,
-            y: y - 5,
+            y: tableHeaderBoxY,
             width: 515,
-            height: 22,
-            color: tableBg,
+            height: tableHeaderBoxH,
+            color: lightBg,
             borderColor: borderGray,
             borderWidth: 1,
         });
 
-        page.drawText("S.No", { x: 50, y, size: 9, font: fontBold, color: darkText });
-        page.drawText("Item Description", { x: 90, y, size: 9, font: fontBold, color: darkText });
-        page.drawText("Qty", { x: 330, y, size: 9, font: fontBold, color: darkText });
-        page.drawText("Price (Rs.)", { x: 390, y, size: 9, font: fontBold, color: darkText });
-        page.drawText("Total (Rs.)", { x: 480, y, size: 9, font: fontBold, color: darkText });
+        // Vertically Centered Text Y inside Table Header
+        const headerTextY = getCenteredTextY(tableHeaderBoxY, tableHeaderBoxH, 8.5);
 
-        y -= 25;
+        // Header Labels
+        page.drawText("S.No", { x: 48, y: headerTextY, size: 8.5, font: fontBold, color: darkText });
+        page.drawText("Item Description", { x: 88, y: headerTextY, size: 8.5, font: fontBold, color: darkText });
+        drawRightText("Qty", 350, headerTextY, 8.5, fontBold, darkText);
+        drawRightText("Price", 440, headerTextY, 8.5, fontBold, darkText);
+        drawRightText("Total", 545, headerTextY, 8.5, fontBold, darkText);
+
+        y = tableHeaderBoxY; // Top of row area starts at bottom of header box
 
         // Table Rows
         const items = order.order_items || [];
         items.forEach((item, index) => {
+            const rowBoxY = y - 20;
+            const rowBoxH = 20;
+            const rowTextY = getCenteredTextY(rowBoxY, rowBoxH, 8.5);
+
+            const isAlt = index % 2 === 1;
+            if (isAlt) {
+                page.drawRectangle({
+                    x: 40,
+                    y: rowBoxY,
+                    width: 515,
+                    height: rowBoxH,
+                    color: altRowBg,
+                });
+            }
+
+            // Top Row Divider
             page.drawLine({
-                start: { x: 40, y: y + 14 },
-                end: { x: 555, y: y + 14 },
+                start: { x: 40, y: y },
+                end: { x: 555, y: y },
                 thickness: 0.5,
                 color: borderGray,
             });
 
-            page.drawText(`${index + 1}`, { x: 50, y, size: 9, font: fontRegular, color: darkText });
-            page.drawText((item.product_name || "Item").slice(0, 38), {
-                x: 90,
-                y,
-                size: 9,
+            page.drawText(`${index + 1}`, { x: 52, y: rowTextY, size: 8.5, font: fontRegular, color: darkText });
+            page.drawText((item.product_name || "Item").slice(0, 42), {
+                x: 88,
+                y: rowTextY,
+                size: 8.5,
                 font: fontRegular,
                 color: darkText,
             });
-            page.drawText(`${item.quantity}`, { x: 330, y, size: 9, font: fontRegular, color: darkText });
-            page.drawText(`${item.price_at_purchase}`, {
-                x: 390,
-                y,
-                size: 9,
-                font: fontRegular,
-                color: darkText,
-            });
-            page.drawText(`${item.line_total}`, {
-                x: 480,
-                y,
-                size: 9,
-                font: fontBold,
-                color: darkText,
-            });
+            
+            drawRightText(`${item.quantity}`, 350, rowTextY, 8.5, fontRegular, darkText);
+            drawRightText(formatAmount(item.price_at_purchase), 440, rowTextY, 8.5, fontRegular, darkText);
+            drawRightText(formatAmount(item.line_total), 545, rowTextY, 8.5, fontBold, darkText);
 
-            y -= 20;
+            y = rowBoxY;
         });
 
-        // Table Bottom Line
+        // Table Bottom Border Line
         page.drawLine({
-            start: { x: 40, y: y + 14 },
-            end: { x: 555, y: y + 14 },
+            start: { x: 40, y },
+            end: { x: 555, y },
             thickness: 1,
             color: primaryGreen,
         });
 
-        // --- SUMMARY & PAYMENT TRANSACTION DETAILS SECTION ---
-        y -= 15;
+        // --- 4. FINANCIAL BREAKDOWN SUMMARY & AMOUNT IN WORDS (SIDE-BY-SIDE) ---
+        y -= 18;
 
-        // Extract Payment Transaction Metadata
+        const summaryTopY = y;
+        let rightRowY = summaryTopY;
+
+        const drawSummaryRow = (label, valStr, isBold = false, isGreen = false) => {
+            const font = isBold ? fontBold : fontRegular;
+            const color = isGreen ? primaryGreen : darkText;
+            const size = isBold ? 9.5 : 8.5;
+
+            page.drawText(label, {
+                x: 320,
+                y: rightRowY,
+                size: isBold ? 9 : 8.5,
+                font: isBold ? fontBold : fontRegular,
+                color,
+            });
+
+            drawRightText(valStr, 545, rightRowY, size, font, color);
+        };
+
+        // Subtotal
+        drawSummaryRow("Subtotal:", formatAmount(order.subtotal));
+
+        // Delivery Charge
+        rightRowY -= 15;
+        const deliveryTxt = order.delivery_charge === 0 ? "FREE" : formatAmount(order.delivery_charge);
+        drawSummaryRow("Delivery Charge:", deliveryTxt);
+
+        // Savings / Coupon Discount
+        if (order.coupon_discount > 0) {
+            rightRowY -= 15;
+            const savingsLabel = `Total Savings (${order.coupon_code || "Coupon"}):`;
+            drawSummaryRow(savingsLabel, `- ${formatAmount(order.coupon_discount)}`, true, true);
+        }
+
+        // Banner Box for AMOUNT PAID (Right Side)
+        // Set top edge 12pt below the last summary row baseline to prevent overlap
+        const paidBoxTop = rightRowY - 12;
+        const paidBoxH = 24;
+        const paidBoxY = paidBoxTop - paidBoxH;
+
+        page.drawRectangle({
+            x: 310,
+            y: paidBoxY,
+            width: 245,
+            height: paidBoxH,
+            color: bannerBg,
+            borderColor: primaryGreen,
+            borderWidth: 1,
+        });
+
+        const paidTextY = getCenteredTextY(paidBoxY, paidBoxH, 9.5);
+
+        page.drawText("AMOUNT PAID:", {
+            x: 320,
+            y: paidTextY,
+            size: 9.5,
+            font: fontBold,
+            color: primaryGreen,
+        });
+
+        drawRightText(formatAmount(order.total), 545, paidTextY, 10.5, fontBold, primaryGreen);
+
+        // --- 5. AMOUNT IN WORDS CARD (LEFT SIDE OF SUMMARY) ---
+        // Spans from top of summary block down to paidBoxY
+        const wordsBoxTopY = summaryTopY + 10;
+        const wordsBoxY = paidBoxY;
+        const wordsBoxH = wordsBoxTopY - wordsBoxY;
+
+        page.drawRectangle({
+            x: 40,
+            y: wordsBoxY,
+            width: 255,
+            height: wordsBoxH,
+            color: altRowBg,
+            borderColor: borderGray,
+            borderWidth: 1,
+        });
+
+        // Vertically center the 2-line Amount in Words block inside left card
+        const wordsBoxCenterY = wordsBoxY + (wordsBoxH / 2);
+        const wordsTitleY = wordsBoxCenterY + 6;
+        const wordsValY = wordsBoxCenterY - 8;
+
+        page.drawText("Amount in Words:", {
+            x: 50,
+            y: wordsTitleY,
+            size: 8,
+            font: fontBold,
+            color: secondaryText,
+        });
+
+        const wordsText = numberToWords(order.total);
+        page.drawText(wordsText.slice(0, 42), {
+            x: 50,
+            y: wordsValY,
+            size: 8.5,
+            font: fontBold,
+            color: primaryGreen,
+        });
+
+        y = paidBoxY; // Update vertical cursor to bottom of summary block
+
+        // --- 6. PAYMENT & TRANSACTION DETAILS TABLE ---
+        y -= 30; // Spacing before section title
+
+        page.drawText("PAYMENT & TRANSACTION DETAILS", {
+            x: 40,
+            y,
+            size: 9,
+            font: fontBold,
+            color: primaryGreen,
+        });
+
+        // Set top edge 12pt below section title baseline to prevent border touching
+        const payHeaderBoxTop = y - 12;
+        const payHeaderBoxH = 22;
+        const payHeaderBoxY = payHeaderBoxTop - payHeaderBoxH;
+
+        // Payment Table Header Banner
+        page.drawRectangle({
+            x: 40,
+            y: payHeaderBoxY,
+            width: 515,
+            height: payHeaderBoxH,
+            color: lightBg,
+            borderColor: borderGray,
+            borderWidth: 1,
+        });
+
+        const payHeaderTextY = getCenteredTextY(payHeaderBoxY, payHeaderBoxH, 8.5);
+
+        page.drawText("Payment Method", { x: 48, y: payHeaderTextY, size: 8.5, font: fontBold, color: darkText });
+        page.drawText("Transaction ID", { x: 175, y: payHeaderTextY, size: 8.5, font: fontBold, color: darkText });
+        page.drawText("Payment Date & Time", { x: 310, y: payHeaderTextY, size: 8.5, font: fontBold, color: darkText });
+        page.drawText("UTR / Ref No", { x: 430, y: payHeaderTextY, size: 8.5, font: fontBold, color: darkText });
+        drawRightText("Status", 545, payHeaderTextY, 8.5, fontBold, darkText);
+
+        y = payHeaderBoxY;
+
+        // Extract Payment Transaction Details
         const gwResp = order.gateway_response || order.payment_response || {};
         const pDetails = Array.isArray(gwResp.paymentDetails) ? gwResp.paymentDetails[0] : (gwResp.paymentDetails || gwResp);
         const splitInstrument = Array.isArray(pDetails?.splitInstruments) ? pDetails.splitInstruments[0] : null;
 
-        // Transaction ID & UTR Number
         const transactionId = order.gateway_transaction_id || pDetails?.transactionId || gwResp.transactionId || order.payment_id || null;
         const utrNo = splitInstrument?.rail?.utr || splitInstrument?.rail?.upiTransactionId || order.utr_number || null;
 
-        // Payment Method Display Logic
         const rawMethod = (order.payment_method || "").toLowerCase();
         const isCodOrder = rawMethod === "cod";
         const hasDoorstepUpiDetails = isCodOrder && (transactionId || utrNo || order.doorstep_upi || (order.payment_status === "paid" && (gwResp.transactionId || order.gateway_transaction_id)));
@@ -450,7 +505,6 @@ export async function GET(request, { params }) {
             paymentMethodDisplay = "PhonePe Payment Gateway";
         }
 
-        // Payment Timestamp
         const paymentTs = pDetails?.timestamp || gwResp.timestamp || null;
         let formattedPaymentDate = "-";
 
@@ -476,120 +530,27 @@ export async function GET(request, { params }) {
             }
         }
 
-        // --- FINANCIAL BREAKDOWN SUMMARY ---
-        const drawSummaryRow = (label, valStr, isBold = false, isGreen = false) => {
-            const font = isBold ? fontBold : fontRegular;
-            const color = isGreen ? primaryGreen : darkText;
-            const size = isBold ? 11 : 9;
-
-            // Draw Label starting at x: 320
-            page.drawText(label, {
-                x: 320,
-                y,
-                size: isBold ? 10 : 9,
-                font: isBold ? fontBold : fontRegular,
-                color,
-            });
-
-            // Draw Value right-aligned at x: 550
-            const valWidth = font.widthOfTextAtSize(valStr, size);
-            page.drawText(valStr, {
-                x: 550 - valWidth,
-                y,
-                size,
-                font,
-                color,
-            });
-        };
-
-        // Subtotal
-        drawSummaryRow("Subtotal:", `Rs. ${order.subtotal}`);
-
-        // Delivery Charge
-        y -= 16;
-        const deliveryTxt = order.delivery_charge === 0 ? "FREE" : `Rs. ${order.delivery_charge}`;
-        drawSummaryRow("Delivery Charge:", deliveryTxt);
-
-        // Savings / Coupon Discount
-        if (order.coupon_discount > 0) {
-            y -= 16;
-            const savingsLabel = `Total Savings (${order.coupon_code || "Coupon"}):`;
-            drawSummaryRow(savingsLabel, `- Rs. ${order.coupon_discount}`, true, true);
-        }
-
-        y -= 18;
-        // Clean Divider Line above Amount Paid
-        page.drawLine({
-            start: { x: 320, y: y + 10 },
-            end: { x: 550, y: y + 10 },
-            thickness: 1,
-            color: primaryGreen,
-        });
-
-        // Amount Paid
-        drawSummaryRow("AMOUNT PAID:", `Rs. ${order.total}`, true, true);
-
-        // --- AMOUNT IN WORDS (ABOVE PAYMENT DETAILS TABLE) ---
-        y -= 25;
-        page.drawText("Amount in Words:", { x: 40, y, size: 8.5, font: fontBold, color: darkText });
-        const wordsText = numberToWords(order.total);
-        page.drawText(wordsText, {
-            x: 135,
-            y,
-            size: 8.5,
-            font: fontBold,
-            color: primaryGreen,
-        });
-
-        // --- FULL-WIDTH PAYMENT & TRANSACTION DETAILS TABLE ---
-        y -= 25;
-
-        page.drawText("PAYMENT & TRANSACTION DETAILS", {
-            x: 40,
-            y,
-            size: 9.5,
-            font: fontBold,
-            color: primaryGreen,
-        });
-
-        y -= 18;
-
-        // Payment Table Header Rectangle (Full Width 515pt)
-        page.drawRectangle({
-            x: 40,
-            y: y - 5,
-            width: 515,
-            height: 22,
-            color: tableBg,
-            borderColor: borderGray,
-            borderWidth: 1,
-        });
-
-        page.drawText("Payment Method", { x: 48, y, size: 8.5, font: fontBold, color: darkText });
-        page.drawText("Transaction ID", { x: 175, y, size: 8.5, font: fontBold, color: darkText });
-        page.drawText("Payment Date & Time", { x: 310, y, size: 8.5, font: fontBold, color: darkText });
-        page.drawText("UTR / Ref No", { x: 430, y, size: 8.5, font: fontBold, color: darkText });
-        page.drawText("Status", { x: 510, y, size: 8.5, font: fontBold, color: darkText });
-
-        y -= 22;
+        const payRowBoxY = y - 20;
+        const payRowBoxH = 20;
+        const payRowTextY = getCenteredTextY(payRowBoxY, payRowBoxH, 8);
 
         // Table Row Divider
         page.drawLine({
-            start: { x: 40, y: y + 14 },
-            end: { x: 555, y: y + 14 },
+            start: { x: 40, y },
+            end: { x: 555, y },
             thickness: 0.5,
             color: borderGray,
         });
 
-        // Row Values
-        page.drawText(paymentMethodDisplay, { x: 48, y, size: 8, font: fontBold, color: primaryGreen });
-        page.drawText((transactionId || "-").slice(0, 24), { x: 175, y, size: 8, font: fontRegular, color: darkText });
-        page.drawText((formattedPaymentDate || "-").slice(0, 22), { x: 310, y, size: 8, font: fontRegular, color: darkText });
-        page.drawText((utrNo || "-").slice(0, 16), { x: 430, y, size: 8, font: fontRegular, color: darkText });
-        page.drawText("PAID", { x: 510, y, size: 8, font: fontBold, color: primaryGreen });
+        // Row Values Vertically Centered
+        page.drawText(paymentMethodDisplay, { x: 48, y: payRowTextY, size: 8, font: fontBold, color: primaryGreen });
+        page.drawText((transactionId || "-").slice(0, 24), { x: 175, y: payRowTextY, size: 8, font: fontRegular, color: darkText });
+        page.drawText((formattedPaymentDate || "-").slice(0, 22), { x: 310, y: payRowTextY, size: 8, font: fontRegular, color: darkText });
+        page.drawText((utrNo || "-").slice(0, 16), { x: 430, y: payRowTextY, size: 8, font: fontRegular, color: darkText });
+        drawRightText("PAID", 545, payRowTextY, 8, fontBold, primaryGreen);
 
-        // Table Bottom Divider Line
-        y -= 6;
+        // Table Bottom Line
+        y = payRowBoxY;
         page.drawLine({
             start: { x: 40, y },
             end: { x: 555, y },
@@ -597,8 +558,8 @@ export async function GET(request, { params }) {
             color: primaryGreen,
         });
 
-        // --- FOOTER WITH SUPPORT INFO ---
-        y = 70;
+        // --- 7. FOOTER WITH SUPPORT INFO ---
+        y = 60;
         page.drawLine({
             start: { x: 40, y: y + 15 },
             end: { x: 555, y: y + 15 },
@@ -606,52 +567,46 @@ export async function GET(request, { params }) {
             color: borderGray,
         });
 
-        page.drawText("Thank you for shopping with Vanodhan Herbs!", {
-            x: 40,
-            y,
-            size: 9,
-            font: fontBold,
-            color: primaryGreen,
-        });
+        drawCenterText("Thank you for shopping with Vanodhan Herbs!", 297.64, y, 9, fontBold, primaryGreen);
 
         y -= 14;
-        page.drawText(
+        drawCenterText(
             "Customer Support: vanodhanherbs@gmail.com  |  Phone: +91 99752 26220  |  760, Uttam Town, Inzapur, Wardha - 442001",
-            {
-                x: 40,
-                y,
-                size: 7.5,
-                font: fontRegular,
-                color: darkText,
-            }
+            297.64,
+            y,
+            7.5,
+            fontRegular,
+            darkText
         );
 
         y -= 12;
-        page.drawText(
+        drawCenterText(
             "This is an official computer-generated invoice and does not require a physical signature.",
-            {
-                x: 40,
-                y,
-                size: 7.5,
-                font: fontRegular,
-                color: secondaryText,
-            }
+            297.64,
+            y,
+            7.2,
+            fontRegular,
+            secondaryText
         );
 
         // Serialize PDF to Uint8Array buffer
         const pdfBytes = await pdfDoc.save();
 
+        const disposition = isPreview
+            ? "inline"
+            : `attachment; filename="Invoice-VH-${order.id.slice(0, 8).toUpperCase()}.pdf"`;
+
         return new NextResponse(pdfBytes, {
             status: 200,
             headers: {
                 "Content-Type": "application/pdf",
-                "Content-Disposition": `attachment; filename="Invoice-VH-${order.id.slice(0, 8).toUpperCase()}.pdf"`,
+                "Content-Disposition": disposition,
             },
         });
     } catch (err) {
         console.error("Invoice generation error:", err);
         return NextResponse.json(
-            { error: "Failed to generate tax invoice PDF." },
+            { error: "Failed to generate invoice PDF." },
             { status: 500 }
         );
     }

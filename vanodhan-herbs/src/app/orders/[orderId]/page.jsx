@@ -13,6 +13,7 @@ import {
     FiCopy,
     FiTruck,
     FiDownload,
+    FiEye,
     FiLock,
 } from "react-icons/fi";
 
@@ -196,6 +197,45 @@ export default function OrderDetailsPage({ params }) {
         } catch (err) {
             console.error("Download invoice exception:", err);
             setInvoiceError("Failed to download tax invoice.");
+        } finally {
+            setDownloadingInvoice(false);
+        }
+    };
+
+    const handlePreviewInvoice = async () => {
+        try {
+            setDownloadingInvoice(true);
+            setInvoiceError("");
+
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
+            if (!session?.access_token) {
+                setInvoiceError("Session expired. Please login again.");
+                setDownloadingInvoice(false);
+                return;
+            }
+
+            const res = await fetch(`/api/orders/${order.id}/invoice?preview=true`, {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                setInvoiceError(errData.error || "Failed to preview invoice.");
+                setDownloadingInvoice(false);
+                return;
+            }
+
+            const blob = await res.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            window.open(blobUrl, "_blank");
+        } catch (err) {
+            console.error("Preview invoice exception:", err);
+            setInvoiceError("Failed to preview tax invoice.");
         } finally {
             setDownloadingInvoice(false);
         }
@@ -520,17 +560,30 @@ export default function OrderDetailsPage({ params }) {
                                         </h3>
 
                                         {canDownloadInvoice ? (
-                                            <button
-                                                type="button"
-                                                onClick={handleDownloadInvoice}
-                                                disabled={downloadingInvoice}
-                                                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--primary)] px-4 py-3.5 text-sm font-bold text-white transition-all duration-300 hover:bg-[var(--primary-hover)] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
-                                            >
-                                                <FiDownload size={18} />
-                                                {downloadingInvoice
-                                                    ? "Generating PDF..."
-                                                    : "Download Invoice"}
-                                            </button>
+                                            <div className="flex flex-col sm:flex-row gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={handlePreviewInvoice}
+                                                    disabled={downloadingInvoice}
+                                                    title="Preview Invoice"
+                                                    className="flex items-center justify-center gap-2 rounded-2xl border border-[var(--primary)] bg-[var(--surface)] px-4 py-3 text-sm font-bold text-[var(--primary)] transition-all duration-300 hover:bg-[var(--primary)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60 sm:px-3.5"
+                                                >
+                                                    <FiEye size={18} />
+                                                    <span className="sm:hidden">Preview Invoice</span>
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={handleDownloadInvoice}
+                                                    disabled={downloadingInvoice}
+                                                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-bold text-white transition-all duration-300 hover:bg-[var(--primary-hover)] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                                                >
+                                                    <FiDownload size={18} />
+                                                    {downloadingInvoice
+                                                        ? "Generating..."
+                                                        : "Download Invoice"}
+                                                </button>
+                                            </div>
                                         ) : (
                                             <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4 text-center">
                                                 <div className="flex items-center justify-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
