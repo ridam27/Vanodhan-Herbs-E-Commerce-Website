@@ -68,16 +68,18 @@ An official Tax Invoice PDF is **ONLY available for download/generation** when *
 
 ## 🛠️ Admin Panel Specifications (`vanodhan-herbs-admin`)
 
-For reference and future integration in the separate Admin Panel codebase (`vanodhan-herbs-admin`):
+For reference and implementation in the separate Admin Panel codebase (`vanodhan-herbs-admin`):
 
 ### 1. Admin Tax Invoice Rules
-- For Admin panel invoice downloads, the order status requirement is relaxed to allow shipping dispatch:
-  - Enabled **ONLY** when `order.status === "shipped"` (or `"delivered"`) AND `order.payment_status === "paid"`.
-  - Disabled if order status is before `shipped` (e.g. `pending`, `confirmed`, `processing`, `packed`) or if payment is unpaid.
-  - Displays explicit reason messaging when disabled.
+- **Order Status Requirement**: Must be **`confirmed` or any stage after it** (`confirmed`, `packed`, `shipped`, `delivered`).
+  - Disabled if order status is `pending` or `cancelled`.
+- **Payment Status Requirement**: **NO condition on payment**.
+  - Generation/download is permitted regardless of payment status (allowed for both Pre-paid and COD / unpaid / pending payment orders once confirmed).
 
-### 2. Admin Packing Slips Rules
-- **Accessible for any order at ANY stage** (including `pending`, `confirmed`, `packed`, `shipped`, COD, or Pre-paid).
-- Designed for warehouse fulfillment staff to pack items into shipping boxes before delivery/payment completion.
-- Contains item checklist, quantities, MRPs, delivery address, and shipping labels, while excluding sensitive financial transaction summaries.
+### 2. Admin Packaging Slip Rules
+- **Order Status Requirement**: Absolutely **ONLY `confirmed` or any stage after it** (`confirmed`, `packed`, `shipped`, `delivered`).
+  - Disabled if order status is `pending` or `cancelled`.
+- **Payment Status Requirement**: **NO condition on payment**.
+  - Accessible for both Pre-paid and Cash-on-Delivery (COD) orders once confirmed.
+  - Designed for warehouse fulfillment staff to pack items into shipping boxes before dispatch.
 

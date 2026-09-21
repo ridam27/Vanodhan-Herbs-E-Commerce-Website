@@ -23,6 +23,7 @@ This document tracks all implementation steps, file changes, and architectural e
 | `2026-08-31 15:27` | [`Docs/AuthDevelopment.md`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/AuthDevelopment.md) | `[NEW]` | Created master authentication architecture & development documentation covering Supabase/Twilio setup, zero-trust backend security, data flow diagrams, and troubleshooting guide. |
 | `2026-09-14 23:15` | [`src/app/api/orders/[orderId]/invoice/route.js`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/app/api/orders/[orderId]/invoice/route.js) | `[NEW]` | Server-side PDF invoice generator endpoint using `pdf-lib` with strict Bearer JWT auth, order ownership check, and `delivered` && `paid` status enforcement. |
 | `2026-09-14 23:15` | [`src/app/orders/[orderId]/page.jsx`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/src/app/orders/[orderId]/page.jsx) | `[MODIFY]` | Added status-aware "Download Tax Invoice" button component and download handler in Order Details view, rendering disabled state with explicit reason text when pending. |
+| `2026-09-21 12:20` | [`Docs/invoice_implement.md`](file:///c:/Users/HP/Desktop/Github/Vanodhan-Herbs-E-Commerce-Website/vanodhan-herbs/Docs/invoice_implement.md) | `[MODIFY]` | Updated Admin Panel specs for Tax Invoice & Packaging Slips: both require order status to be confirmed (or any stage after) with no condition on payment status. |
 
 ---
 

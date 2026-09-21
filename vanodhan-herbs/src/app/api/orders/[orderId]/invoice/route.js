@@ -264,6 +264,8 @@ export async function GET(request, { params }) {
         y -= 13;
         // Row 5
         page.drawText("PAN: N/A  |  GSTIN: N/A", { x: col1X, y, size: 8, font: fontRegular, color: secondaryText });
+        const customerEmail = user?.email || order?.customer_email || order?.email || address?.email || "";
+        page.drawText(`Email: ${customerEmail || "N/A"}`.slice(0, 32), { x: col2X, y, size: 8, font: fontRegular, color: secondaryText });
 
         y -= 25; // Clean margin before items table
 
