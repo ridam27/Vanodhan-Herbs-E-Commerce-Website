@@ -17,6 +17,8 @@ export function AuthProvider({ children }) {
         hasPhone: true,
         hasGoogle: true,
         isChecked: false,
+        phone: null,
+        user: null,
     });
     const [showVerificationModal, setShowVerificationModal] = useState(false);
 
@@ -32,6 +34,8 @@ export function AuthProvider({ children }) {
                     hasPhone: false,
                     hasGoogle: false,
                     isChecked: true,
+                    phone: null,
+                    user: null,
                 });
                 return;
             }
@@ -57,12 +61,20 @@ export function AuthProvider({ children }) {
             const data = await response.json();
 
             if (data.success) {
+                const authoritativePhone = data.user?.phone || null;
+
                 setProfileStatus({
                     isComplete: data.isComplete,
                     hasPhone: data.hasPhone,
                     hasGoogle: data.hasGoogle,
                     isChecked: true,
+                    phone: authoritativePhone,
+                    user: data.user || null,
                 });
+
+                if (authoritativePhone) {
+                    setUser((prev) => (prev ? { ...prev, phone: authoritativePhone } : prev));
+                }
 
                 if (!data.isComplete) {
                     setShowVerificationModal(true);
@@ -103,6 +115,8 @@ export function AuthProvider({ children }) {
                     hasPhone: false,
                     hasGoogle: false,
                     isChecked: true,
+                    phone: null,
+                    user: null,
                 });
                 setShowVerificationModal(false);
             }

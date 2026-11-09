@@ -14,12 +14,13 @@ import {
     FiLock,
     FiTag,
     FiChevronRight,
+    FiPhone,
 } from "react-icons/fi";
 
 export default function UserSupportTickets({ refreshTrigger }) {
     const { user, isLoggedIn, authLoading } = useAuth();
     const [tickets, setTickets] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
     const fetchUserTickets = useCallback(async () => {
@@ -34,7 +35,7 @@ export default function UserSupportTickets({ refreshTrigger }) {
         try {
             const { data, error: fetchError } = await supabase
                 .from("support_queries")
-                .select("id, inquiry_type, subject, message, status, admin_notes, created_at, updated_at")
+                .select("id, inquiry_type, subject, message, status, admin_notes, phone, email, created_at, updated_at")
                 .eq("user_id", user.id)
                 .order("created_at", { ascending: false });
 
@@ -53,8 +54,46 @@ export default function UserSupportTickets({ refreshTrigger }) {
     }, [user]);
 
     useEffect(() => {
-        fetchUserTickets();
-    }, [fetchUserTickets, refreshTrigger]);
+        let isCancelled = false;
+
+        async function loadTickets() {
+            if (!user) return;
+            setLoading(true);
+            setError("");
+
+            try {
+                const { data, error: fetchError } = await supabase
+                    .from("support_queries")
+                    .select("id, inquiry_type, subject, message, status, admin_notes, phone, email, created_at, updated_at")
+                    .eq("user_id", user.id)
+                    .order("created_at", { ascending: false });
+
+                if (!isCancelled) {
+                    if (fetchError) {
+                        console.error("Error fetching support queries:", fetchError);
+                        setError("Could not load your support tickets.");
+                    } else {
+                        setTickets(data || []);
+                    }
+                }
+            } catch (err) {
+                if (!isCancelled) {
+                    console.error("Exception fetching queries:", err);
+                    setError("Failed to connect to support server.");
+                }
+            } finally {
+                if (!isCancelled) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        loadTickets();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [user, refreshTrigger]);
 
     const getStatusBadge = (status) => {
         switch (status) {
@@ -167,13 +206,19 @@ export default function UserSupportTickets({ refreshTrigger }) {
                         >
                             {/* Ticket Top Header */}
                             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <span className="text-xs font-mono font-bold text-[var(--text-secondary)] bg-[var(--surface)] px-2.5 py-1 rounded-md border border-[var(--border)]">
                                         #TK-{ticket.id.slice(0, 8)}
                                     </span>
                                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--primary)]">
                                         <FiTag size={12} /> {ticket.inquiry_type}
                                     </span>
+                                    {ticket.phone && (
+                                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--text-secondary)] bg-[var(--surface)] px-2 py-0.5 rounded-md border border-[var(--border)]">
+                                            <FiPhone size={11} className="text-[var(--primary)]" />
+                                            <span>{ticket.phone}</span>
+                                        </span>
+                                    )}
                                 </div>
                                 <div>{getStatusBadge(ticket.status)}</div>
                             </div>

@@ -21,7 +21,7 @@ import {
 const DRAFT_STORAGE_KEY = "vanodhan_contact_draft";
 
 export default function ContactForm({ onQuerySubmitted }) {
-    const { user, isLoggedIn } = useAuth();
+    const { user, isLoggedIn, profileStatus } = useAuth();
 
     const [formData, setFormData] = useState({
         fullName: "",
@@ -40,36 +40,59 @@ export default function ContactForm({ onQuerySubmitted }) {
 
     // 1. Rehydrate draft or prefill user details on mount / auth change
     useEffect(() => {
-        const savedDraft = sessionStorage.getItem(DRAFT_STORAGE_KEY);
+        const timer = setTimeout(() => {
+            const savedDraft =
+                typeof window !== "undefined"
+                    ? sessionStorage.getItem(DRAFT_STORAGE_KEY)
+                    : null;
+            const resolvedPhone =
+                user?.phone ||
+                profileStatus?.phone ||
+                profileStatus?.user?.phone ||
+                user?.user_metadata?.phone ||
+                "";
 
-        if (savedDraft) {
-            try {
-                const parsed = JSON.parse(savedDraft);
-                setFormData((prev) => ({
-                    ...prev,
-                    ...parsed,
-                    // If user is logged in, prioritize user's actual email/name if draft lacked them
-                    email: parsed.email || user?.email || "",
-                    fullName: parsed.fullName || user?.user_metadata?.full_name || user?.user_metadata?.name || "",
-                }));
+            if (savedDraft) {
+                try {
+                    const parsed = JSON.parse(savedDraft);
+                    setFormData((prev) => ({
+                        ...prev,
+                        ...parsed,
+                        // If user is logged in, prioritize user's actual email/name/phone if draft lacked them
+                        email: parsed.email || user?.email || "",
+                        fullName:
+                            parsed.fullName ||
+                            user?.user_metadata?.full_name ||
+                            user?.user_metadata?.name ||
+                            "",
+                        phone: parsed.phone || resolvedPhone || "",
+                    }));
 
-                if (isLoggedIn) {
-                    setRestoredNotice(true);
+                    if (isLoggedIn) {
+                        setRestoredNotice(true);
+                        sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse saved contact draft:", e);
                     sessionStorage.removeItem(DRAFT_STORAGE_KEY);
                 }
-            } catch (e) {
-                console.error("Failed to parse saved contact draft:", e);
-                sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+            } else if (user) {
+                // Auto pre-fill logged in user email, name, and phone from database
+                setFormData((prev) => ({
+                    ...prev,
+                    email: prev.email || user.email || "",
+                    fullName:
+                        prev.fullName ||
+                        user.user_metadata?.full_name ||
+                        user.user_metadata?.name ||
+                        "",
+                    phone: prev.phone || resolvedPhone || "",
+                }));
             }
-        } else if (user) {
-            // Auto pre-fill logged in user email and name
-            setFormData((prev) => ({
-                ...prev,
-                email: prev.email || user.email || "",
-                fullName: prev.fullName || user.user_metadata?.full_name || user.user_metadata?.name || "",
-            }));
-        }
-    }, [user, isLoggedIn]);
+        }, 0);
+
+        return () => clearTimeout(timer);
+    }, [user, isLoggedIn, profileStatus]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -127,10 +150,16 @@ export default function ContactForm({ onQuerySubmitted }) {
             if (onQuerySubmitted) {
                 onQuerySubmitted();
             }
+            const resolvedPhone =
+                user?.phone ||
+                profileStatus?.phone ||
+                profileStatus?.user?.phone ||
+                user?.user_metadata?.phone ||
+                "";
             setFormData({
                 fullName: user.user_metadata?.full_name || user.user_metadata?.name || "",
                 email: user.email || "",
-                phone: "",
+                phone: resolvedPhone,
                 inquiryType: "General Inquiry",
                 subject: "",
                 message: "",
@@ -236,9 +265,11 @@ export default function ContactForm({ onQuerySubmitted }) {
                     <div className="grid gap-6 sm:grid-cols-2">
                         {/* Phone Number */}
                         <div>
-                            <label className="block text-sm font-semibold text-[var(--text)] mb-2">
-                                Phone Number
-                            </label>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-semibold text-[var(--text)]">
+                                    Phone Number
+                                </label>
+                            </div>
                             <div className="relative">
                                 <FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" size={18} />
                                 <input

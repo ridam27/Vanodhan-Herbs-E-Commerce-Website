@@ -82,9 +82,10 @@ export async function GET(request) {
             }
         }
 
-        // Server-side check for verified phone
+        // Server-side check for verified phone (from auth.users phone column or user_metadata)
+        const userPhone = user.phone || user.user_metadata?.phone || null;
         const hasPhone = Boolean(
-            user.phone && String(user.phone).trim().length >= 10
+            userPhone && String(userPhone).trim().length >= 10
         );
 
         // Server-side check for linked Google identity
@@ -118,7 +119,7 @@ export async function GET(request) {
             user: {
                 id: user.id,
                 email: user.email || googleIdentity?.identity_data?.email || null,
-                phone: user.phone || null,
+                phone: userPhone,
                 fullName,
                 avatarUrl,
             },
