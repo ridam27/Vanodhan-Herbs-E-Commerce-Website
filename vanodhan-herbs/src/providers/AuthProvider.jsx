@@ -39,8 +39,20 @@ export function AuthProvider({ children }) {
             const response = await fetch("/api/user/profile-status", {
                 headers: {
                     Authorization: `Bearer ${session.access_token}`,
+                    "ngrok-skip-browser-warning": "true",
                 },
             });
+
+            if (!response.ok) {
+                console.warn(`[AuthProvider] Profile status check returned ${response.status}`);
+                return;
+            }
+
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                console.warn("[AuthProvider] Profile status returned non-JSON response:", contentType);
+                return;
+            }
 
             const data = await response.json();
 

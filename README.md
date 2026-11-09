@@ -9,7 +9,7 @@
 
 🌐 **Live Website**: <a href="https://www.vanodhanherbs.com" target="_blank" rel="noopener noreferrer">www.vanodhanherbs.com</a>
 
-**Vanodhan Herbs** is a modern, high-performance customer-facing e-commerce application crafted for authentic Ayurvedic formulations, herbal teas, wellness powders, and organic remedies. Built on top of **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, and **Supabase**, it delivers an intuitive shopping experience, dynamic product filtering, seamless checkout with payment gateway support, customer account management, and a dedicated customer support ticketing portal.
+**Vanodhan Herbs** is a modern, high-performance customer-facing e-commerce application crafted for authentic Herbal formulations, herbal teas, wellness powders, and organic remedies. Built on top of **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4**, and **Supabase**, it delivers an intuitive shopping experience, dynamic product filtering, seamless checkout with payment gateway support, customer account management, and a dedicated customer support ticketing portal.
 
 ---
 

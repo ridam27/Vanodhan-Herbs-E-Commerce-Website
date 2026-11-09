@@ -6,7 +6,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import { FiPhone, FiMail, FiMapPin, FiClock, FiMessageCircle, FiMap, FiShield, FiHeadphones, FiList } from "react-icons/fi";
 
 export const metadata = {
-    title: "Contact Us | Vanodhan Herbs - Ayurvedic Wellness & Customer Care",
+    title: "Contact Us | Vanodhan Herbs - Herbal Wellness & Customer Care",
     description: "Get in touch with Vanodhan Herbs for product inquiries, herbal usage guidance, order support, and wholesale partnerships. We are here to support your natural wellness journey.",
 };
 
@@ -24,8 +24,8 @@ const faqData = [
         answer: "Keep your herbal products in a cool, dry place away from direct sunlight. Ensure the airtight seal or jar lid is closed tightly after every use to preserve active botanical potency and fresh aroma."
     },
     {
-        question: "Do you offer wholesale or bulk ordering for Ayurvedic practitioners?",
-        answer: "Yes! We partner with wellness centers, Ayurvedic clinics, and retailers across India. Please select 'Wholesale & Bulk Orders' in the contact form or email us directly at vanodhanherbs@gmail.com with your requirements."
+        question: "Do you offer wholesale or bulk ordering for Herbal practitioners?",
+        answer: "Yes! We partner with wellness centers, Herbal clinics, and retailers across India. Please select 'Wholesale & Bulk Orders' in the contact form or email us directly at vanodhanherbs@gmail.com with your requirements."
     },
     {
         question: "What is your return and refund policy?",
@@ -51,7 +51,7 @@ export default function ContactPage() {
                         </h1>
 
                         <p className="mt-6 text-lg text-[var(--text-secondary)] leading-relaxed">
-                            Have questions about our authentic Ayurvedic formulations, order delivery, or dosage guidance? Our dedicated herbal experts are eager to help.
+                            Have questions about our authentic Herbal formulations, order delivery, or dosage guidance? Our dedicated herbal experts are eager to help.
                         </p>
 
                         <div className="mt-8 flex justify-center">

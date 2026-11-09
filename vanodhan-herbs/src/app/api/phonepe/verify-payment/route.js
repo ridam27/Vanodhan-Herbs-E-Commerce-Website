@@ -1,31 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { checkPhonePeOrderStatus } from "@/lib/phonepe";
+import {
+    fulfillOrderPayment,
+    extractPhonePeState,
+    extractPhonePeAmount,
+    extractPhonePeCurrency,
+    extractPhonePeOrderId,
+    extractPhonePeTransactionId,
+} from "@/lib/orderFulfillment";
 
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-
-function extractPhonePeState(response) {
-    return response?.state || null;
-}
-
-function extractPhonePeAmount(response) {
-    return response?.amount || null;
-}
-
-function extractPhonePeCurrency(response) {
-    return response?.currency || null;
-}
-
-function extractPhonePeOrderId(response) {
-    return response?.orderId || null;
-}
-
-function extractPhonePeTransactionId(response) {
-    return response?.paymentDetails?.[0]?.transactionId || null;
-}
 
 export async function POST(request) {
     try {
@@ -82,6 +70,7 @@ export async function POST(request) {
             );
         }
 
+        // Fast path: If already paid (e.g. fulfilled by webhook right before client redirect)
         if (order.payment_status === "paid") {
             return NextResponse.json({
                 success: true,
@@ -97,30 +86,8 @@ export async function POST(request) {
             );
         }
 
-        const { data: lockedOrder, error: lockError } = await supabaseAdmin
-            .from("orders")
-            .update({
-                payment_status: "verifying",
-                updated_at: new Date().toISOString(),
-            })
-            .eq("id", order.id)
-            .eq("user_id", user.id)
-            .eq("payment_status", "pending")
-            .select("*")
-            .single();
-
-        if (lockError || !lockedOrder) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message: "Payment is already being processed or is not pending.",
-                },
-                { status: 409 }
-            );
-        }
-
         const merchantOrderId =
-            lockedOrder.gateway_order_id || `VH-${lockedOrder.id}`;
+            order.gateway_order_id || `VH-${order.id}`;
 
         const phonepeStatus = await checkPhonePeOrderStatus(merchantOrderId);
 
@@ -130,18 +97,18 @@ export async function POST(request) {
         const phonepeOrderId = extractPhonePeOrderId(phonepeStatus);
         const transactionId = extractPhonePeTransactionId(phonepeStatus);
 
-        const expectedAmount = Number(lockedOrder.total) * 100;
+        const expectedAmount = Number(order.total) * 100;
 
         if (paymentState !== "COMPLETED") {
             await supabaseAdmin
                 .from("orders")
                 .update({
                     payment_status: paymentState === "FAILED" ? "failed" : "pending",
-                    phonepe_order_id: phonepeOrderId,
+                    phonepe_order_id: phonepeOrderId || null,
                     gateway_response: phonepeStatus,
                     updated_at: new Date().toISOString(),
                 })
-                .eq("id", lockedOrder.id);
+                .eq("id", order.id);
 
             return NextResponse.json(
                 {
@@ -158,11 +125,11 @@ export async function POST(request) {
                 .from("orders")
                 .update({
                     payment_status: "failed",
-                    phonepe_order_id: phonepeOrderId,
+                    phonepe_order_id: phonepeOrderId || null,
                     gateway_response: phonepeStatus,
                     updated_at: new Date().toISOString(),
                 })
-                .eq("id", lockedOrder.id);
+                .eq("id", order.id);
 
             return NextResponse.json(
                 { success: false, message: "Invalid payment currency." },
@@ -175,11 +142,11 @@ export async function POST(request) {
                 .from("orders")
                 .update({
                     payment_status: "failed",
-                    phonepe_order_id: phonepeOrderId,
+                    phonepe_order_id: phonepeOrderId || null,
                     gateway_response: phonepeStatus,
                     updated_at: new Date().toISOString(),
                 })
-                .eq("id", lockedOrder.id);
+                .eq("id", order.id);
 
             return NextResponse.json(
                 { success: false, message: "Payment amount mismatch." },
@@ -192,11 +159,11 @@ export async function POST(request) {
                 .from("orders")
                 .update({
                     payment_status: "failed",
-                    phonepe_order_id: phonepeOrderId,
+                    phonepe_order_id: phonepeOrderId || null,
                     gateway_response: phonepeStatus,
                     updated_at: new Date().toISOString(),
                 })
-                .eq("id", lockedOrder.id);
+                .eq("id", order.id);
 
             return NextResponse.json(
                 { success: false, message: "Payment transaction ID missing." },
@@ -204,115 +171,30 @@ export async function POST(request) {
             );
         }
 
-        const { data: orderItems, error: itemsError } = await supabaseAdmin
-            .from("order_items")
-            .select(`
-                product_id,
-                quantity,
-                products (
-                    id,
-                    name,
-                    stock_quantity
-                )
-            `)
-            .eq("order_id", lockedOrder.id);
+        // Delegate atomic fulfillment (handles RPC row-locking + safe JS fallback)
+        const fulfillmentResult = await fulfillOrderPayment({
+            orderId: order.id,
+            phonepeOrderId: phonepeOrderId || merchantOrderId,
+            transactionId,
+            gatewayResponse: phonepeStatus,
+            source: "client_verify",
+        });
 
-        if (itemsError || !orderItems || orderItems.length === 0) {
-            await supabaseAdmin
-                .from("orders")
-                .update({
-                    payment_status: "failed",
-                    phonepe_order_id: phonepeOrderId,
-                    gateway_response: phonepeStatus,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq("id", lockedOrder.id);
-
+        if (!fulfillmentResult.success) {
             return NextResponse.json(
-                { success: false, message: "Order items not found." },
-                { status: 500 }
+                {
+                    success: false,
+                    message: fulfillmentResult.message || "Payment verification failed.",
+                    code: fulfillmentResult.code,
+                },
+                { status: 400 }
             );
         }
 
-        for (const item of orderItems) {
-            const { data: updatedProduct, error: stockError } =
-                await supabaseAdmin
-                    .from("products")
-                    .update({
-                        stock_quantity:
-                            Number(item.products.stock_quantity) -
-                            Number(item.quantity),
-                    })
-                    .eq("id", item.product_id)
-                    .gte("stock_quantity", Number(item.quantity))
-                    .select("id")
-                    .single();
-
-            if (stockError || !updatedProduct) {
-                await supabaseAdmin
-                    .from("orders")
-                    .update({
-                        payment_status: "failed",
-                        phonepe_order_id: phonepeOrderId,
-                        gateway_response: phonepeStatus,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq("id", lockedOrder.id);
-
-                return NextResponse.json(
-                    {
-                        success: false,
-                        message: `${item.products.name} is out of stock.`,
-                    },
-                    { status: 400 }
-                );
-            }
-        }
-
-        if (lockedOrder.coupon_id) {
-            const { data: coupon } = await supabaseAdmin
-                .from("coupons")
-                .select("id, used_count")
-                .eq("id", lockedOrder.coupon_id)
-                .single();
-
-            if (coupon) {
-                await supabaseAdmin
-                    .from("coupons")
-                    .update({
-                        used_count: Number(coupon.used_count) + 1,
-                    })
-                    .eq("id", coupon.id);
-
-                await supabaseAdmin.from("coupon_redemptions").insert({
-                    coupon_id: coupon.id,
-                    user_id: lockedOrder.user_id,
-                    order_id: lockedOrder.id,
-                });
-            }
-        }
-
-        await supabaseAdmin
-            .from("orders")
-            .update({
-                status: "confirmed",
-                payment_status: "paid",
-                phonepe_order_id: phonepeOrderId,
-                gateway_transaction_id: transactionId,
-                gateway_response: phonepeStatus,
-                updated_at: new Date().toISOString(),
-            })
-            .eq("id", lockedOrder.id);
-
-        await supabaseAdmin
-            .from("cart_items")
-            .delete()
-            .eq("user_id", lockedOrder.user_id);
-
         return NextResponse.json({
             success: true,
-            message: "Payment verified successfully.",
-            orderId: lockedOrder.id,
+            message: fulfillmentResult.message || "Payment verified successfully.",
+            orderId: order.id,
         });
     } catch (error) {
         return NextResponse.json(

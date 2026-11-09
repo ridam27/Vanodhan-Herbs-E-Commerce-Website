@@ -16,8 +16,8 @@ import {
 } from "react-icons/fi";
 
 export const metadata = {
-    title: "About Us | Vanodhan Herbs - Pure Herbal & Ayurvedic Botanical Wellness",
-    description: "Discover Vanodhan Herbs heritage. We synthesize centuries-old Ayurvedic traditions with modern botanical purity testing to bring 100% natural, chemical-free herbal formulations to your home.",
+    title: "About Us | Vanodhan Herbs - Pure Herbal & Herbal Botanical Wellness",
+    description: "Discover Vanodhan Herbs heritage. We synthesize centuries-old Herbal traditions with modern botanical purity testing to bring 100% natural, chemical-free herbal formulations to your home.",
 };
 
 const coreValues = [
@@ -73,7 +73,7 @@ const herbalSteps = [
 const stats = [
     { value: "50,000+", label: "Happy Customers Nationwide" },
     { value: "100%", label: "Pure & Organic Ingredients" },
-    { value: "15+ Years", label: "Ayurvedic Botanical Expertise" },
+    { value: "15+ Years", label: "Herbal Botanical Expertise" },
     { value: "4.9 / 5.0", label: "Average Customer Rating" },
 ];
 
@@ -91,7 +91,7 @@ export default function AboutPage() {
                         </span>
 
                         <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-[var(--text)] sm:text-5xl lg:text-6xl leading-tight">
-                            Rooted in Nature, Driven by <span className="text-[var(--primary)]">Pure Ayurvedic Purity</span>
+                            Rooted in Nature, Driven by <span className="text-[var(--primary)]">Pure Herbal Purity</span>
                         </h1>
 
                         <p className="mt-6 text-lg text-[var(--text-secondary)] leading-relaxed">
@@ -142,7 +142,7 @@ export default function AboutPage() {
                             <div className="mt-8 space-y-3">
                                 {[
                                     "No synthetic fillers, chemical binders, or artificial fragrances",
-                                    "Traditional Ayurvedic formulation compliance",
+                                    "Traditional Herbal formulation compliance",
                                     "Direct farm partnerships supporting ethical growers",
                                 ].map((item, index) => (
                                     <div key={index} className="flex items-center gap-3">
@@ -265,7 +265,7 @@ export default function AboutPage() {
                                 Experience the Power of Pure Herbal Remedies
                             </h2>
                             <p className="mt-6 text-lg text-[var(--text-secondary)] max-w-xl mx-auto leading-relaxed">
-                                Browse our full collection of authentic Ayurvedic powders, churnas, and botanical blends crafted for vibrant health.
+                                Browse our full collection of authentic Herbal powders, churnas, and botanical blends crafted for vibrant health.
                             </p>
 
                             <div className="mt-10 flex flex-wrap justify-center gap-4">

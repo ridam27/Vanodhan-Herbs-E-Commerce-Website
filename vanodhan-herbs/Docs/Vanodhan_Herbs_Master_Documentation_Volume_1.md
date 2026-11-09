@@ -13,7 +13,7 @@
 
 # 1. Project Overview
 
-Vanodhan Herbs is a production-grade single-vendor Ayurvedic e-commerce
+Vanodhan Herbs is a production-grade single-vendor Herbal e-commerce
 platform built to provide customers with a secure, scalable, and modern
 online shopping experience while maintaining enterprise-level coding
 standards and security practices.

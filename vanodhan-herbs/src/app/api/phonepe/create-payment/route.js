@@ -129,12 +129,25 @@ export async function POST(request) {
             .eq("id", order.id)
             .eq("user_id", user.id);
 
-        const redirectUrl = `${appUrl}/payment/phonepe/status?orderId=${order.id}`;
+        // Maintain the user's current browsing origin for the browser redirect
+        // so their Supabase auth session in localStorage is preserved across redirects.
+        const requestOrigin = request.headers.get("origin") || request.headers.get("referer");
+        let clientBaseUrl = appUrl;
+        if (requestOrigin) {
+            try {
+                const parsed = new URL(requestOrigin);
+                clientBaseUrl = parsed.origin;
+            } catch {}
+        }
+
+        const redirectUrl = `${clientBaseUrl}/payment/phonepe/status?orderId=${order.id}`;
+        const callbackUrl = `${appUrl}/api/phonepe/webhook`;
 
         const phonepeResponse = await createPhonePePayment({
             merchantOrderId,
             amount: total,
             redirectUrl,
+            callbackUrl,
         });
 
         const paymentUrl =

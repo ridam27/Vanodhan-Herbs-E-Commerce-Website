@@ -46,6 +46,7 @@ export async function createPhonePePayment({
     merchantOrderId,
     amount,
     redirectUrl,
+    callbackUrl,
 }) {
     if (!merchantOrderId || typeof merchantOrderId !== "string") {
         throw new Error("Invalid merchant order ID.");
@@ -79,6 +80,7 @@ export async function createPhonePePayment({
                 message: "Payment for Vanodhan Herbs order",
                 merchantUrls: {
                     redirectUrl,
+                    ...(callbackUrl ? { callbackUrl } : {}),
                 },
             },
         }),
