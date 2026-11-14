@@ -4,10 +4,7 @@
  */
 
 export const SITE_URL = (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    (process.env.NODE_ENV === "production"
-        ? "https://vanodhanherbs.com"
-        : process.env.NEXT_PUBLIC_APP_URL || "https://vanodhanherbs.com")
+    process.env.NEXT_PUBLIC_SITE_URL || "https://vanodhanherbs.com"
 ).replace(/\/$/, "");
 
 export const siteConfig = {
