@@ -2,6 +2,21 @@ import Navbar from "@/components/Navbar";
 import ShopProducts from "@/components/ShopProducts";
 import { getProducts } from "@/lib/products";
 
+export const metadata = {
+    title: "Shop Authentic Herbal Powders, Churna & Wellness Remedies",
+    description:
+        "Explore Vanodhan Herbs complete collection of 100% natural Ayurvedic powders, traditional churnas, cold-pressed oils, and botanical daily wellness products.",
+    alternates: {
+        canonical: "/shop",
+    },
+    openGraph: {
+        title: "Shop Herbal Powders & Churna | Vanodhan Herbs",
+        description:
+            "Browse 100% pure Ayurvedic formulations, lab-tested herbal powders, and holistic wellness remedies.",
+        url: "/shop",
+    },
+};
+
 export default async function ShopPage() {
     const products = await getProducts();
 
@@ -19,10 +34,6 @@ export default async function ShopPage() {
                         <h1 className="text-2xl font-bold text-[var(--text)] sm:text-5xl">
                             Shop Herbal Products
                         </h1>
-
-                        {/* <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)]">
-                            Explore natural Herbal products crafted for everyday wellness.
-                        </p> */}
                     </div>
 
                     <ShopProducts products={products} />

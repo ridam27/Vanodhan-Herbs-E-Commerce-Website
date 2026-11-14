@@ -6,8 +6,18 @@ import FaqAccordion from "@/components/FaqAccordion";
 import { FiPhone, FiMail, FiMapPin, FiClock, FiMessageCircle, FiMap, FiShield, FiHeadphones, FiList } from "react-icons/fi";
 
 export const metadata = {
-    title: "Contact Us | Vanodhan Herbs - Herbal Wellness & Customer Care",
-    description: "Get in touch with Vanodhan Herbs for product inquiries, herbal usage guidance, order support, and wholesale partnerships. We are here to support your natural wellness journey.",
+    title: "Contact Us & Customer Support",
+    description:
+        "Get in touch with Vanodhan Herbs for product inquiries, herbal usage guidance, order support, and wholesale partnerships. We are here to support your natural wellness journey.",
+    alternates: {
+        canonical: "/contact",
+    },
+    openGraph: {
+        title: "Contact Us | Vanodhan Herbs Customer Care",
+        description:
+            "Reach our wellness support team via phone, email, or direct contact form. We assist with herbal dosage, order tracking, and queries.",
+        url: "/contact",
+    },
 };
 
 const faqData = [

@@ -16,8 +16,18 @@ import {
 } from "react-icons/fi";
 
 export const metadata = {
-    title: "About Us | Vanodhan Herbs - Pure Herbal & Herbal Botanical Wellness",
-    description: "Discover Vanodhan Herbs heritage. We synthesize centuries-old Herbal traditions with modern botanical purity testing to bring 100% natural, chemical-free herbal formulations to your home.",
+    title: "About Us - Pure Herbal & Botanical Wellness",
+    description:
+        "Discover Vanodhan Herbs heritage. We synthesize centuries-old Herbal traditions with modern botanical purity testing to bring 100% natural, chemical-free herbal formulations to your home.",
+    alternates: {
+        canonical: "/about",
+    },
+    openGraph: {
+        title: "About Us | Vanodhan Herbs Heritage & Purity",
+        description:
+            "Learn about our sustainable harvesting, traditional Ayurvedic processing, and commitment to 100% pure organic botanicals.",
+        url: "/about",
+    },
 };
 
 const coreValues = [
